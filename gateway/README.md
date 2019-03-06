@@ -10,8 +10,8 @@ This application is configured for Service Discovery and Configuration with the 
 
 Before you can build this project, you must install and configure the following dependencies on your machine:
 
-1. [Node.js][]: We use Node to run a development web server and build the project.
-   Depending on your system, you can install Node either from source or as a pre-packaged bundle.
+1.  [Node.js][]: We use Node to run a development web server and build the project.
+    Depending on your system, you can install Node either from source or as a pre-packaged bundle.
 
 After installing Node, you should be able to run the following command to install development tools.
 You will only need to run this command when dependencies change in [package.json](package.json).
@@ -46,17 +46,17 @@ The security settings in `src/main/resources/application.yml` are configured for
 
 ```yaml
 security:
-  basic:
-    enabled: false
-  oauth2:
-    client:
-      accessTokenUri: http://localhost:9080/auth/realms/jhipster/protocol/openid-connect/token
-      userAuthorizationUri: http://localhost:9080/auth/realms/jhipster/protocol/openid-connect/auth
-      clientId: web_app
-      clientSecret: web_app
-      scope: openid profile email
-    resource:
-      userInfoUri: http://localhost:9080/auth/realms/jhipster/protocol/openid-connect/userinfo
+    basic:
+        enabled: false
+    oauth2:
+        client:
+            accessTokenUri: http://localhost:9080/auth/realms/jhipster/protocol/openid-connect/token
+            userAuthorizationUri: http://localhost:9080/auth/realms/jhipster/protocol/openid-connect/auth
+            clientId: web_app
+            clientSecret: web_app
+            scope: openid profile email
+        resource:
+            userInfoUri: http://localhost:9080/auth/realms/jhipster/protocol/openid-connect/userinfo
 ```
 
 ### Okta
@@ -67,17 +67,17 @@ Modify `src/main/resources/application.yml` to use your Okta settings.
 
 ```yaml
 security:
-  basic:
-    enabled: false
-  oauth2:
-    client:
-      accessTokenUri: https://{yourOktaDomain}.com/oauth2/default/v1/token
-      userAuthorizationUri: https://{yourOktaDomain}.com/oauth2/default/v1/authorize
-      clientId: { clientId }
-      clientSecret: { clientSecret }
-      scope: openid profile email
-    resource:
-      userInfoUri: https://{yourOktaDomain}.com/oauth2/default/v1/userinfo
+    basic:
+        enabled: false
+    oauth2:
+        client:
+            accessTokenUri: https://{yourOktaDomain}.com/oauth2/default/v1/token
+            userAuthorizationUri: https://{yourOktaDomain}.com/oauth2/default/v1/authorize
+            clientId: {clientId}
+            clientSecret: {clientSecret}
+            scope: openid profile email
+        resource:
+            userInfoUri: https://{yourOktaDomain}.com/oauth2/default/v1/userinfo
 ```
 
 Create an OIDC App in Okta to get a `{clientId}` and `{clientSecret}`. To do this, log in to your Okta Developer account and navigate to **Applications** > **Add Application**. Click **Web** and click the **Next** button. Give the app a name you’ll remember, specify `http://localhost:8080` as a Base URI, and `http://localhost:8080/login` as a Login Redirect URI. Click **Done** and copy the client ID and secret into your `application.yml` file.
@@ -94,15 +94,15 @@ After making these changes, you should be good to go! If you have any issues, pl
 
 Service workers are commented by default, to enable them please uncomment the following code.
 
-- The service worker registering script in index.html
+-   The service worker registering script in index.html
 
 ```html
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').then(function() {
-      console.log('Service Worker Registered');
-    });
-  }
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+        .register('./service-worker.js')
+        .then(function() { console.log('Service Worker Registered'); });
+    }
 </script>
 ```
 
@@ -151,26 +151,18 @@ will generate few files:
 
 ## Building for production
 
-### Packaging as jar
-
-To build the final jar and optimize the gateway application for production, run:
+To optimize the gateway application for production, run:
 
     ./mvnw -Pprod clean package
 
 This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
 To ensure everything worked, run:
 
-    java -jar target/*.jar
+    java -jar target/*.war
 
 Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
 
 Refer to [Using JHipster in production][] for more details.
-
-### Packaging as war
-
-To package your application as a war in order to deploy it to an application server, run:
-
-    ./mvnw -Pprod,war clean package
 
 ## Testing
 

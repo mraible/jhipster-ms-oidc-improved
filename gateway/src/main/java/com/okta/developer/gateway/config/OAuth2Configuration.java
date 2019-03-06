@@ -1,6 +1,5 @@
 package com.okta.developer.gateway.config;
 
-import io.github.jhipster.config.JHipsterConstants;
 import com.okta.developer.gateway.security.OAuth2AuthenticationSuccessHandler;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +31,7 @@ import java.io.IOException;
  * mode too.
  */
 @Configuration
-@Profile(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)
+@Profile("dev")
 public class OAuth2Configuration {
     public static final String SAVED_LOGIN_ORIGIN_URI = OAuth2Configuration.class.getName() + "_SAVED_ORIGIN";
 

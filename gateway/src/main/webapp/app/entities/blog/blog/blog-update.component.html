@@ -1,25 +1,25 @@
 <div class="row justify-content-center">
     <div class="col-8">
-        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
             <h2 id="jhi-blog-heading" jhiTranslate="gatewayApp.blogBlog.home.createOrEditLabel">Create or edit a Blog</h2>
             <div>
                 <jhi-alert-error></jhi-alert-error>
                 <div class="form-group" [hidden]="!blog.id">
                     <label for="id" jhiTranslate="global.field.id">ID</label>
-                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
-                        readonly />
+                    <input type="text" class="form-control" id="id" name="id"
+                        [(ngModel)]="blog.id" readonly />
                 </div>
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="gatewayApp.blogBlog.name" for="field_name">Name</label>
                     <input type="text" class="form-control" name="name" id="field_name"
-                           formControlName="name"/>
-                    <div *ngIf="editForm.get('name').invalid && (editForm.get('name').dirty || editForm.get('name').touched)">
+                        [(ngModel)]="blog.name" required minlength="3"/>
+                    <div [hidden]="!(editForm.controls.name?.dirty && editForm.controls.name?.invalid)">
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('name').errors.required" jhiTranslate="entity.validation.required">
+                        [hidden]="!editForm.controls.name?.errors?.required" jhiTranslate="entity.validation.required">
                         This field is required.
                         </small>
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('name').errors.minlength" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: 3 }">
+                        [hidden]="!editForm.controls.name?.errors?.minlength" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: 3 }">
                         This field is required to be at least 3 characters.
                         </small>
                     </div>
@@ -27,14 +27,14 @@
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="gatewayApp.blogBlog.handle" for="field_handle">Handle</label>
                     <input type="text" class="form-control" name="handle" id="field_handle"
-                           formControlName="handle"/>
-                    <div *ngIf="editForm.get('handle').invalid && (editForm.get('handle').dirty || editForm.get('handle').touched)">
+                        [(ngModel)]="blog.handle" required minlength="2"/>
+                    <div [hidden]="!(editForm.controls.handle?.dirty && editForm.controls.handle?.invalid)">
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('handle').errors.required" jhiTranslate="entity.validation.required">
+                        [hidden]="!editForm.controls.handle?.errors?.required" jhiTranslate="entity.validation.required">
                         This field is required.
                         </small>
                         <small class="form-text text-danger"
-                               *ngIf="editForm.get('handle').errors.minlength" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: 2 }">
+                        [hidden]="!editForm.controls.handle?.errors?.minlength" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: 2 }">
                         This field is required to be at least 2 characters.
                         </small>
                     </div>
@@ -42,9 +42,9 @@
 
                 <div class="form-group">
                     <label class="form-control-label" jhiTranslate="gatewayApp.blogBlog.user" for="field_user">User</label>
-                    <select class="form-control" id="field_user" name="user" formControlName="user">
+                    <select class="form-control" id="field_user" name="user" [(ngModel)]="blog.user" >
                         <option [ngValue]="null"></option>
-                        <option [ngValue]="userOption.id === editForm.get('user').value?.id ? editForm.get('user').value : userOption" *ngFor="let userOption of users; trackBy: trackUserById">{{userOption.login}}</option>
+                        <option [ngValue]="userOption.id === blog.user?.id ? blog.user : userOption" *ngFor="let userOption of users; trackBy: trackUserById">{{userOption.login}}</option>
                     </select>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                 <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
                     <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
                 </button>
-                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                <button type="submit" id="save-entity" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
                     <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
                 </button>
             </div>

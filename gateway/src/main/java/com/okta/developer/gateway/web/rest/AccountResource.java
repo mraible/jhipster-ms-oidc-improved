@@ -30,10 +30,10 @@ public class AccountResource {
     }
 
     /**
-     * {@code GET  /authenticate} : check if the user is authenticated, and return its login.
+     * GET  /authenticate : check if the user is authenticated, and return its login.
      *
-     * @param request the HTTP request.
-     * @return the login if the user is authenticated.
+     * @param request the HTTP request
+     * @return the login if the user is authenticated
      */
     @GetMapping("/authenticate")
     public String isAuthenticated(HttpServletRequest request) {
@@ -42,11 +42,11 @@ public class AccountResource {
     }
 
     /**
-     * {@code GET  /account} : get the current user.
+     * GET  /account : get the current user.
      *
-     * @param principal the current user; resolves to {@code null} if not authenticated.
-     * @return the current user.
-     * @throws InternalServerErrorException {@code 500 (Internal Server Error)} if the user couldn't be returned.
+     * @param principal the current user; resolves to null if not authenticated
+     * @return the current user
+     * @throws InternalServerErrorException 500 (Internal Server Error) if the user couldn't be returned
      */
     @GetMapping("/account")
     @SuppressWarnings("unchecked")

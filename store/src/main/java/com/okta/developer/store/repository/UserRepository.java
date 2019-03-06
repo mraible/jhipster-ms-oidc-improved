@@ -4,7 +4,6 @@ import com.okta.developer.store.domain.User;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -13,7 +12,7 @@ import java.util.Optional;
 import java.time.Instant;
 
 /**
- * Spring Data MongoDB repository for the {@link User} entity.
+ * Spring Data MongoDB repository for the User entity.
  */
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {

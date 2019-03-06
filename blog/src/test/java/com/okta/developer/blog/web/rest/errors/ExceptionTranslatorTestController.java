@@ -55,7 +55,7 @@ public class ExceptionTranslatorTestController {
     }
 
     @GetMapping("/test/response-status")
-    public void exceptionWithResponseStatus() {
+    public void exceptionWithReponseStatus() {
         throw new TestResponseStatusException();
     }
 

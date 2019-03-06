@@ -2,6 +2,10 @@ package com.okta.developer.store.config;
 
 import io.github.jhipster.config.JHipsterConstants;
 import io.github.jhipster.config.JHipsterProperties;
+import io.undertow.Undertow;
+import io.undertow.Undertow.Builder;
+import io.undertow.UndertowOptions;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
@@ -11,6 +15,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.xnio.OptionMap;
 
 import javax.servlet.*;
 import java.util.*;
@@ -25,7 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Unit tests for the {@link WebConfigurer} class.
+ * Unit tests for the WebConfigurer class.
+ *
+ * @see WebConfigurer
  */
 public class WebConfigurerTest {
 
@@ -73,6 +80,22 @@ public class WebConfigurerTest {
         assertThat(container.getMimeMappings().get("abs")).isEqualTo("audio/x-mpeg");
         assertThat(container.getMimeMappings().get("html")).isEqualTo("text/html;charset=utf-8");
         assertThat(container.getMimeMappings().get("json")).isEqualTo("text/html;charset=utf-8");
+
+        Builder builder = Undertow.builder();
+        container.getBuilderCustomizers().forEach(c -> c.customize(builder));
+        OptionMap.Builder serverOptions = (OptionMap.Builder) ReflectionTestUtils.getField(builder, "serverOptions");
+        assertThat(serverOptions.getMap().get(UndertowOptions.ENABLE_HTTP2)).isNull();
+    }
+
+    @Test
+    public void testUndertowHttp2Enabled() {
+        props.getHttp().setVersion(JHipsterProperties.Http.Version.V_2_0);
+        UndertowServletWebServerFactory container = new UndertowServletWebServerFactory();
+        webConfigurer.customize(container);
+        Builder builder = Undertow.builder();
+        container.getBuilderCustomizers().forEach(c -> c.customize(builder));
+        OptionMap.Builder serverOptions = (OptionMap.Builder) ReflectionTestUtils.getField(builder, "serverOptions");
+        assertThat(serverOptions.getMap().get(UndertowOptions.ENABLE_HTTP2)).isTrue();
     }
 
     @Test

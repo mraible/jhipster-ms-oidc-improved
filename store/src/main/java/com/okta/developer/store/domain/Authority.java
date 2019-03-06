@@ -5,7 +5,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * An authority (a security role) used by Spring Security.
@@ -33,15 +32,18 @@ public class Authority implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Authority)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        return Objects.equals(name, ((Authority) o).name);
+
+        Authority authority = (Authority) o;
+
+        return !(name != null ? !name.equals(authority.name) : authority.name != null);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name);
+        return name != null ? name.hashCode() : 0;
     }
 
     @Override

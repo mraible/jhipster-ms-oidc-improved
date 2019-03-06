@@ -8,7 +8,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
@@ -21,7 +21,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "post")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "post")
+@Document(indexName = "post")
 public class Post implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -29,7 +29,6 @@ public class Post implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
-    @org.springframework.data.elasticsearch.annotations.Field(type = FieldType.Keyword)
     private Long id;
 
     @NotNull
@@ -148,15 +147,19 @@ public class Post implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Post)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        return id != null && id.equals(((Post) o).id);
+        Post post = (Post) o;
+        if (post.getId() == null || getId() == null) {
+            return false;
+        }
+        return Objects.equals(getId(), post.getId());
     }
 
     @Override
     public int hashCode() {
-        return 31;
+        return Objects.hashCode(getId());
     }
 
     @Override

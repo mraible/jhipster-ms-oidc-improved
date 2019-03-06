@@ -16,7 +16,7 @@ import java.io.IOException;
 import static com.okta.developer.gateway.config.OAuth2Configuration.SAVED_LOGIN_ORIGIN_URI;
 
 /**
- * {@link AuthenticationSuccessHandler} that looks for a saved login origin and redirects to it if it exists.
+ * AuthenticationSuccessHandler that looks for a saved login origin and redirects to it if it exists.
  */
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 

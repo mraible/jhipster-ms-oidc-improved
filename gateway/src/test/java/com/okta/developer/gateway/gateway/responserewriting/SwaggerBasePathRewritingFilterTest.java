@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 import static springfox.documentation.swagger2.web.Swagger2Controller.DEFAULT_URL;
 
 /**
- * Tests {@link SwaggerBasePathRewritingFilter} class.
+ * Tests SwaggerBasePathRewritingFilter class.
  */
 public class SwaggerBasePathRewritingFilterTest {
 

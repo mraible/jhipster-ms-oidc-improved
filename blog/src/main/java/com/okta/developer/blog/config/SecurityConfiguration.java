@@ -47,16 +47,12 @@ public class SecurityConfiguration extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/**").authenticated()
             .antMatchers("/management/health").permitAll()
             .antMatchers("/management/info").permitAll()
-            .antMatchers("/management/prometheus").permitAll()
             .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN);
 
     }
 
     /**
-     * This {@link OAuth2RestTemplate} is only used by {@code AuthorizationHeaderUtil} that is currently used by {@code TokenRelayRequestInterceptor}.
-     *
-     * @param oAuth2ProtectedResourceDetails the resource details.
-     * @return the {@link OAuth2RestTemplate}.
+     * This OAuth2RestTemplate is only used by AuthorizationHeaderUtil that is currently used by TokenRelayRequestInterceptor
      */
     @Bean
     public OAuth2RestTemplate oAuth2RestTemplate(OAuth2ProtectedResourceDetails oAuth2ProtectedResourceDetails,

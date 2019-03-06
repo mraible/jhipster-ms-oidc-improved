@@ -30,11 +30,9 @@ public class LogoutResource {
     }
 
     /**
-     * {@code POST  /api/logout} : logout the current user.
+     * POST  /api/logout : logout the current user
      *
-     * @param request the {@link HttpServletRequest}.
-     * @param authentication the authentication token.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and a body with a global logout URL and ID token.
+     * @return the ResponseEntity with status 200 (OK) and a body with a global logout URL and ID token
      */
     @PostMapping("/api/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, Authentication authentication) {

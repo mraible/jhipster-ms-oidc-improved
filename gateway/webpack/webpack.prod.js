@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const webpackMerge = require('webpack-merge');
-const { BaseHrefWebpackPlugin } = require('base-href-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin');
@@ -26,7 +25,7 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
         main: './src/main/webapp/app/app.main'
     },
     output: {
-        path: utils.root('target/classes/static/'),
+        path: utils.root('target/www'),
         filename: 'app/[name].[hash].bundle.js',
         chunkFilename: 'app/[id].[hash].chunk.js'
     },
@@ -46,12 +45,7 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
         {
             test: /(vendor\.scss|global\.scss)/,
             use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                    options: {
-                        publicPath: '../'
-                    }
-                },
+                MiniCssExtractPlugin.loader,
                 'css-loader',
                 'postcss-loader',
                 {
@@ -68,12 +62,7 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
         {
             test: /(vendor\.css|global\.css)/,
             use: [
-                {
-                    loader: MiniCssExtractPlugin.loader,
-                    options: {
-                        publicPath: '../'
-                    }
-                },
+                MiniCssExtractPlugin.loader,
                 'css-loader',
                 'postcss-loader'
             ]
@@ -125,8 +114,8 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional
-            filename: 'content/[name].[contenthash].css',
-            chunkFilename: 'content/[id].css'
+            filename: '[name].[contenthash].css',
+            chunkFilename: '[id].css'
         }),
         new MomentLocalesPlugin({
             localesToKeep: [
@@ -151,8 +140,7 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
         new WorkboxPlugin.GenerateSW({
           clientsClaim: true,
           skipWaiting: true,
-        }),
-        new BaseHrefWebpackPlugin({ baseHref: '/' })
+        })
     ],
     mode: 'production'
 });

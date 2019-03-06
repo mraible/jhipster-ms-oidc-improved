@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import javax.validation.constraints.*;
 
-import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -22,7 +21,6 @@ public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
-    @org.springframework.data.elasticsearch.annotations.Field(type = FieldType.Keyword)
     private String id;
 
     @NotNull
@@ -107,15 +105,19 @@ public class Product implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Product)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        return id != null && id.equals(((Product) o).id);
+        Product product = (Product) o;
+        if (product.getId() == null || getId() == null) {
+            return false;
+        }
+        return Objects.equals(getId(), product.getId());
     }
 
     @Override
     public int hashCode() {
-        return 31;
+        return Objects.hashCode(getId());
     }
 
     @Override

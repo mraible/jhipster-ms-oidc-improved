@@ -1,21 +1,17 @@
 package com.okta.developer.blog.web.rest;
-
 import com.okta.developer.blog.domain.Post;
 import com.okta.developer.blog.repository.PostRepository;
 import com.okta.developer.blog.repository.search.PostSearchRepository;
 import com.okta.developer.blog.web.rest.errors.BadRequestAlertException;
-
-import io.github.jhipster.web.util.HeaderUtil;
-import io.github.jhipster.web.util.PaginationUtil;
+import com.okta.developer.blog.web.rest.util.HeaderUtil;
+import com.okta.developer.blog.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +27,7 @@ import java.util.stream.StreamSupport;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
- * REST controller for managing {@link com.okta.developer.blog.domain.Post}.
+ * REST controller for managing Post.
  */
 @RestController
 @RequestMapping("/api")
@@ -40,9 +36,6 @@ public class PostResource {
     private final Logger log = LoggerFactory.getLogger(PostResource.class);
 
     private static final String ENTITY_NAME = "blogPost";
-
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
 
     private final PostRepository postRepository;
 
@@ -54,11 +47,11 @@ public class PostResource {
     }
 
     /**
-     * {@code POST  /posts} : Create a new post.
+     * POST  /posts : Create a new post.
      *
-     * @param post the post to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new post, or with status {@code 400 (Bad Request)} if the post has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @param post the post to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new post, or with status 400 (Bad Request) if the post has already an ID
+     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/posts")
     public ResponseEntity<Post> createPost(@Valid @RequestBody Post post) throws URISyntaxException {
@@ -69,18 +62,18 @@ public class PostResource {
         Post result = postRepository.save(post);
         postSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/posts/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
 
     /**
-     * {@code PUT  /posts} : Updates an existing post.
+     * PUT  /posts : Updates an existing post.
      *
-     * @param post the post to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated post,
-     * or with status {@code 400 (Bad Request)} if the post is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the post couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @param post the post to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated post,
+     * or with status 400 (Bad Request) if the post is not valid,
+     * or with status 500 (Internal Server Error) if the post couldn't be updated
+     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/posts")
     public ResponseEntity<Post> updatePost(@Valid @RequestBody Post post) throws URISyntaxException {
@@ -91,19 +84,19 @@ public class PostResource {
         Post result = postRepository.save(post);
         postSearchRepository.save(result);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, post.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, post.getId().toString()))
             .body(result);
     }
 
     /**
-     * {@code GET  /posts} : get all the posts.
+     * GET  /posts : get all the posts.
      *
-     * @param pageable the pagination information.
-     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of posts in body.
+     * @param pageable the pagination information
+     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many)
+     * @return the ResponseEntity with status 200 (OK) and the list of posts in body
      */
     @GetMapping("/posts")
-    public ResponseEntity<List<Post>> getAllPosts(Pageable pageable, HttpServletRequest request, @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
+    public ResponseEntity<List<Post>> getAllPosts(Pageable pageable, @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get a page of Posts");
         Page<Post> page;
         if (eagerload) {
@@ -111,15 +104,15 @@ public class PostResource {
         } else {
             page = postRepository.findAll(pageable);
         }
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, String.format("/api/posts?eagerload=%b", eagerload));
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
-     * {@code GET  /posts/:id} : get the "id" post.
+     * GET  /posts/:id : get the "id" post.
      *
-     * @param id the id of the post to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the post, or with status {@code 404 (Not Found)}.
+     * @param id the id of the post to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the post, or with status 404 (Not Found)
      */
     @GetMapping("/posts/{id}")
     public ResponseEntity<Post> getPost(@PathVariable Long id) {
@@ -129,32 +122,32 @@ public class PostResource {
     }
 
     /**
-     * {@code DELETE  /posts/:id} : delete the "id" post.
+     * DELETE  /posts/:id : delete the "id" post.
      *
-     * @param id the id of the post to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     * @param id the id of the post to delete
+     * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         log.debug("REST request to delete Post : {}", id);
         postRepository.deleteById(id);
         postSearchRepository.deleteById(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
     /**
-     * {@code SEARCH  /_search/posts?query=:query} : search for the post corresponding
+     * SEARCH  /_search/posts?query=:query : search for the post corresponding
      * to the query.
      *
-     * @param query the query of the post search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
+     * @param query the query of the post search
+     * @param pageable the pagination information
+     * @return the result of the search
      */
     @GetMapping("/_search/posts")
-    public ResponseEntity<List<Post>> searchPosts(@RequestParam String query, Pageable pageable, HttpServletRequest request) {
+    public ResponseEntity<List<Post>> searchPosts(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Posts for query {}", query);
         Page<Post> page = postSearchRepository.search(queryStringQuery(query), pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/posts");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
