@@ -91,6 +91,7 @@ module.exports = (options) => ({
             chunks: ['vendors', 'polyfills', 'main', 'global'],
             chunksSortMode: 'manual',
             inject: 'body'
-        })
+        }),
+        new webpack.IgnorePlugin(/express-engine\/tokens/)
     ]
 });

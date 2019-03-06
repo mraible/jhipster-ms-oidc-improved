@@ -74,6 +74,7 @@
         <maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
         <!-- We can't go to 3.0.0-M2 as it has a regression. See https://issues.apache.org/jira/browse/MENFORCER-306 -->
         <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
+        <maven-failsafe-plugin.version>3.0.0-M3</maven-failsafe-plugin.version>
         <maven-idea-plugin.version>2.2.1</maven-idea-plugin.version>
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
@@ -101,11 +102,19 @@
         <!-- Rule https://sonarcloud.io/coding_rules?open=squid%3AS4684&rule_key=squid%3AS4684 -->
         <sonar.issue.ignore.multicriteria.S4684.resourceKey>src/main/java/**/*</sonar.issue.ignore.multicriteria.S4684.resourceKey>
         <sonar.issue.ignore.multicriteria.S4684.ruleKey>squid:S4684</sonar.issue.ignore.multicriteria.S4684.ruleKey>
-        <sonar.jacoco.reportPaths>${project.testresult.directory}/coverage/jacoco/jacoco.exec</sonar.jacoco.reportPaths>
+        <sonar.jacoco.reportFolder>${project.build.directory}/jacoco</sonar.jacoco.reportFolder>
+        <sonar.jacoco.utReportFile>${sonar.jacoco.reportFolder}/test.exec</sonar.jacoco.utReportFile>
+        <sonar.jacoco.itReportFile>${sonar.jacoco.reportFolder}/integrationTest.exec</sonar.jacoco.itReportFile>
+        <sonar.jacoco.reportPaths>${sonar.jacoco.utReportFile},${sonar.jacoco.itReportFile}</sonar.jacoco.reportPaths>
         <sonar.java.codeCoveragePlugin>jacoco</sonar.java.codeCoveragePlugin>
+        <sonar.junit.utReportFolder>${project.testresult.directory}/test</sonar.junit.utReportFolder>
+        <sonar.junit.itReportFolder>${project.testresult.directory}/integrationTest</sonar.junit.itReportFolder>
+        <sonar.junit.reportPaths>${sonar.junit.utReportFolder},${sonar.junit.itReportFolder}</sonar.junit.reportPaths>
         <sonar.sources>${project.basedir}/src/main/</sonar.sources>
-        <sonar.junit.reportsPath>${project.testresult.directory}</sonar.junit.reportsPath>
         <sonar.tests>${project.basedir}/src/test/</sonar.tests>
+        <!-- Used to keep correct jacoco report filename for the surefire/failsafe arg line. Therefore we set this empty property here -->
+        <surefireArgLine />
+        <failsafeArgLine />
 
         <!-- jhipster-needle-maven-property -->
     </properties>
@@ -435,6 +444,10 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-idea-plugin</artifactId>
             </plugin>
             <plugin>
@@ -523,7 +536,9 @@
                             </goals>
                             <configuration>
                                 <!-- Sets the path to the file which contains the execution data. -->
-                                <destFile>${project.testresult.directory}/coverage/jacoco/jacoco.exec</destFile>
+                                <destFile>${sonar.jacoco.utReportFile}</destFile>
+                                <!-- Sets the name of the property containing the settings for JaCoCo runtime agent. -->
+                                <propertyName>surefireArgLine</propertyName>
                             </configuration>
                         </execution>
                         <!-- Ensures that the code coverage report for unit tests is created after unit tests have been run -->
@@ -534,8 +549,32 @@
                                 <goal>report</goal>
                             </goals>
                             <configuration>
-                                <dataFile>${project.testresult.directory}/coverage/jacoco/jacoco.exec</dataFile>
-                                <outputDirectory>${project.testresult.directory}/coverage/jacoco</outputDirectory>
+                                <dataFile>${sonar.jacoco.utReportFile}</dataFile>
+                                <outputDirectory>${sonar.jacoco.reportFolder}</outputDirectory>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>pre-integration-tests</id>
+                            <goals>
+                                <goal>prepare-agent-integration</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Sets the path to the file which contains the execution data. -->
+                                <destFile>${sonar.jacoco.itReportFile}</destFile>
+                                <!-- Sets the name of the property containing the settings for JaCoCo runtime agent. -->
+                                <propertyName>failsafeArgLine</propertyName>
+                            </configuration>
+                        </execution>
+                        <!-- Ensures that the code coverage report for integration tests is created after integration tests have been run -->
+                        <execution>
+                            <id>post-integration-tests</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>report-integration</goal>
+                            </goals>
+                            <configuration>
+                                <dataFile>${sonar.jacoco.itReportFile}</dataFile>
+                                <outputDirectory>${sonar.jacoco.reportFolder}</outputDirectory>
                             </configuration>
                         </execution>
                     </executions>
@@ -697,13 +736,57 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
                     <configuration>
+                        <!-- To get jacoco report we need to set argLine in surefire, without this snippet the jacoco argLine is lost.
+                             The property must be prefixed with @ and not $. The reason for this is the usage of late binding of variables
+                             by other plugins (jacoco in this case) -->
+                        <argLine>@{surefireArgLine}</argLine>
                         <!-- Force alphabetical order to have a reproducible build -->
                         <runOrder>alphabetical</runOrder>
-                        <!-- Fixes a bug which will be solved in next version after 2.22.1 then this can be removed -->
-                        <!-- see: https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
-                        <useSystemClassLoader>false</useSystemClassLoader>
-                        <reportsDirectory>${sonar.junit.reportsPath}</reportsDirectory>
+                        <reportsDirectory>${sonar.junit.utReportFolder}</reportsDirectory>
+                        <excludes>
+                            <exclude>**/*IT*</exclude>
+                            <exclude>**/*IntTest*</exclude>
+                            <exclude>**/*CucumberIT*</exclude>
+                        </excludes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                    <configuration>
+                        <!-- To get jacoco report we need to set argLine in failsafe, without this snippet the jacoco argLine is lost.
+                             The property must be prefixed with @ and not $. The reason for this is the usage of late binding of variables
+                             by other plugins (jacoco in this case) -->
+                        <argLine>@{failsafeArgLine}</argLine>
+                        <!-- Due to spring-boot repackage, without adding this property test classes are not found
+                             See https://github.com/spring-projects/spring-boot/issues/6254 -->
+                        <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                        <!-- Force alphabetical order to have a reproducible build -->
+                        <runOrder>alphabetical</runOrder>
+                        <reportsDirectory>${sonar.junit.itReportFolder}</reportsDirectory>
+                        <includes>
+                            <include>**/*IT*</include>
+                            <include>**/*IntTest*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*CucumberIT*</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>integration-test</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>verify</id>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>

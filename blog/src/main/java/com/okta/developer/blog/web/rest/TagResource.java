@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -101,10 +102,10 @@ public class TagResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of tags in body.
      */
     @GetMapping("/tags")
-    public ResponseEntity<List<Tag>> getAllTags(Pageable pageable) {
+    public ResponseEntity<List<Tag>> getAllTags(Pageable pageable, HttpServletRequest request) {
         log.debug("REST request to get a page of Tags");
         Page<Tag> page = tagRepository.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/tags");
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -144,10 +145,10 @@ public class TagResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/tags")
-    public ResponseEntity<List<Tag>> searchTags(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<Tag>> searchTags(@RequestParam String query, Pageable pageable, HttpServletRequest request) {
         log.debug("REST request to search for a page of Tags for query {}", query);
         Page<Tag> page = tagSearchRepository.search(queryStringQuery(query), pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/tags");
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
