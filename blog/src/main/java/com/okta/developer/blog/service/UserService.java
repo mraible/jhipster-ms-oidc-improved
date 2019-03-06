@@ -19,7 +19,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,50 +75,6 @@ public class UserService {
             });
     }
 
-    /**
-     * Update all information for a specific user, and return the modified user.
-     *
-     * @param userDTO user to update.
-     * @return updated user.
-     */
-    public Optional<UserDTO> updateUser(UserDTO userDTO) {
-        return Optional.of(userRepository
-            .findById(userDTO.getId()))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .map(user -> {
-                this.clearUserCaches(user);
-                user.setLogin(userDTO.getLogin().toLowerCase());
-                user.setFirstName(userDTO.getFirstName());
-                user.setLastName(userDTO.getLastName());
-                user.setEmail(userDTO.getEmail().toLowerCase());
-                user.setImageUrl(userDTO.getImageUrl());
-                user.setActivated(userDTO.isActivated());
-                user.setLangKey(userDTO.getLangKey());
-                Set<Authority> managedAuthorities = user.getAuthorities();
-                managedAuthorities.clear();
-                userDTO.getAuthorities().stream()
-                    .map(authorityRepository::findById)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(managedAuthorities::add);
-                userSearchRepository.save(user);
-                this.clearUserCaches(user);
-                log.debug("Changed Information for User: {}", user);
-                return user;
-            })
-            .map(UserDTO::new);
-    }
-
-    public void deleteUser(String login) {
-        userRepository.findOneByLogin(login).ifPresent(user -> {
-            userRepository.delete(user);
-            userSearchRepository.delete(user);
-            this.clearUserCaches(user);
-            log.debug("Deleted User: {}", user);
-        });
-    }
-
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER).map(UserDTO::new);
@@ -156,7 +111,7 @@ public class UserService {
      * @return the user from the authentication.
      */
     @SuppressWarnings("unchecked")
-    public UserDTO getUserFromAuthentication(OAuth2Authentication authentication) {
+    /*public UserDTO getUserFromAuthentication(OAuth2Authentication authentication) {
         Object oauth2AuthenticationDetails = authentication.getDetails(); // should be an OAuth2AuthenticationDetails
         Map<String, Object> details = (Map<String, Object>) authentication.getUserAuthentication().getDetails();
         User user = getUser(details);
@@ -175,7 +130,7 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return new UserDTO(syncUserWithIdP(details, user));
-    }
+    }*/
 
     private User syncUserWithIdP(Map<String, Object> details, User user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
@@ -229,7 +184,7 @@ public class UserService {
     }
 
     @SuppressWarnings("unchecked")
-    private static Set<Authority> extractAuthorities(OAuth2Authentication authentication, Map<String, Object> details) {
+    /*private static Set<Authority> extractAuthorities(OAuth2Authentication authentication, Map<String, Object> details) {
         Set<Authority> userAuthorities;
         // get roles from details
         if (details.get("roles") != null) {
@@ -244,7 +199,7 @@ public class UserService {
             );
         }
         return userAuthorities;
-    }
+    }*/
 
     private static User getUser(Map<String, Object> details) {
         User user = new User();
@@ -285,12 +240,6 @@ public class UserService {
         }
         user.setActivated(true);
         return user;
-    }
-
-    private static Set<Authority> extractAuthorities(List<String> values) {
-        return authoritiesFromStringStream(
-            values.stream().filter(role -> role.startsWith("ROLE_"))
-        );
     }
 
     private static Set<Authority> authoritiesFromStringStream(Stream<String> strings) {
