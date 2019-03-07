@@ -8,58 +8,58 @@ import { IPost } from 'app/shared/model/blog/post.model';
 import { PostService } from './post.service';
 
 @Component({
-    selector: 'jhi-post-delete-dialog',
-    templateUrl: './post-delete-dialog.component.html'
+  selector: 'jhi-post-delete-dialog',
+  templateUrl: './post-delete-dialog.component.html'
 })
 export class PostDeleteDialogComponent {
-    post: IPost;
+  post: IPost;
 
-    constructor(protected postService: PostService, public activeModal: NgbActiveModal, protected eventManager: JhiEventManager) {}
+  constructor(protected postService: PostService, public activeModal: NgbActiveModal, protected eventManager: JhiEventManager) {}
 
-    clear() {
-        this.activeModal.dismiss('cancel');
-    }
+  clear() {
+    this.activeModal.dismiss('cancel');
+  }
 
-    confirmDelete(id: number) {
-        this.postService.delete(id).subscribe(response => {
-            this.eventManager.broadcast({
-                name: 'postListModification',
-                content: 'Deleted an post'
-            });
-            this.activeModal.dismiss(true);
-        });
-    }
+  confirmDelete(id: number) {
+    this.postService.delete(id).subscribe(response => {
+      this.eventManager.broadcast({
+        name: 'postListModification',
+        content: 'Deleted an post'
+      });
+      this.activeModal.dismiss(true);
+    });
+  }
 }
 
 @Component({
-    selector: 'jhi-post-delete-popup',
-    template: ''
+  selector: 'jhi-post-delete-popup',
+  template: ''
 })
 export class PostDeletePopupComponent implements OnInit, OnDestroy {
-    protected ngbModalRef: NgbModalRef;
+  protected ngbModalRef: NgbModalRef;
 
-    constructor(protected activatedRoute: ActivatedRoute, protected router: Router, protected modalService: NgbModal) {}
+  constructor(protected activatedRoute: ActivatedRoute, protected router: Router, protected modalService: NgbModal) {}
 
-    ngOnInit() {
-        this.activatedRoute.data.subscribe(({ post }) => {
-            setTimeout(() => {
-                this.ngbModalRef = this.modalService.open(PostDeleteDialogComponent as Component, { size: 'lg', backdrop: 'static' });
-                this.ngbModalRef.componentInstance.post = post;
-                this.ngbModalRef.result.then(
-                    result => {
-                        this.router.navigate(['/post', { outlets: { popup: null } }]);
-                        this.ngbModalRef = null;
-                    },
-                    reason => {
-                        this.router.navigate(['/post', { outlets: { popup: null } }]);
-                        this.ngbModalRef = null;
-                    }
-                );
-            }, 0);
-        });
-    }
+  ngOnInit() {
+    this.activatedRoute.data.subscribe(({ post }) => {
+      setTimeout(() => {
+        this.ngbModalRef = this.modalService.open(PostDeleteDialogComponent as Component, { size: 'lg', backdrop: 'static' });
+        this.ngbModalRef.componentInstance.post = post;
+        this.ngbModalRef.result.then(
+          result => {
+            this.router.navigate(['/post', { outlets: { popup: null } }]);
+            this.ngbModalRef = null;
+          },
+          reason => {
+            this.router.navigate(['/post', { outlets: { popup: null } }]);
+            this.ngbModalRef = null;
+          }
+        );
+      }, 0);
+    });
+  }
 
-    ngOnDestroy() {
-        this.ngbModalRef = null;
-    }
+  ngOnDestroy() {
+    this.ngbModalRef = null;
+  }
 }

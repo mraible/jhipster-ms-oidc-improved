@@ -10,90 +10,88 @@ import { AccountService } from 'app/core';
 import { BlogService } from './blog.service';
 
 @Component({
-    selector: 'jhi-blog',
-    templateUrl: './blog.component.html'
+  selector: 'jhi-blog',
+  templateUrl: './blog.component.html'
 })
 export class BlogComponent implements OnInit, OnDestroy {
-    blogs: IBlog[];
-    currentAccount: any;
-    eventSubscriber: Subscription;
-    currentSearch: string;
+  blogs: IBlog[];
+  currentAccount: any;
+  eventSubscriber: Subscription;
+  currentSearch: string;
 
-    constructor(
-        protected blogService: BlogService,
-        protected jhiAlertService: JhiAlertService,
-        protected eventManager: JhiEventManager,
-        protected activatedRoute: ActivatedRoute,
-        protected accountService: AccountService
-    ) {
-        this.currentSearch =
-            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
-                ? this.activatedRoute.snapshot.params['search']
-                : '';
-    }
+  constructor(
+    protected blogService: BlogService,
+    protected jhiAlertService: JhiAlertService,
+    protected eventManager: JhiEventManager,
+    protected activatedRoute: ActivatedRoute,
+    protected accountService: AccountService
+  ) {
+    this.currentSearch =
+      this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search'] ? this.activatedRoute.snapshot.params['search'] : '';
+  }
 
-    loadAll() {
-        if (this.currentSearch) {
-            this.blogService
-                .search({
-                    query: this.currentSearch
-                })
-                .pipe(
-                    filter((res: HttpResponse<IBlog[]>) => res.ok),
-                    map((res: HttpResponse<IBlog[]>) => res.body)
-                )
-                .subscribe((res: IBlog[]) => (this.blogs = res), (res: HttpErrorResponse) => this.onError(res.message));
-            return;
-        }
-        this.blogService
-            .query()
-            .pipe(
-                filter((res: HttpResponse<IBlog[]>) => res.ok),
-                map((res: HttpResponse<IBlog[]>) => res.body)
-            )
-            .subscribe(
-                (res: IBlog[]) => {
-                    this.blogs = res;
-                    this.currentSearch = '';
-                },
-                (res: HttpErrorResponse) => this.onError(res.message)
-            );
+  loadAll() {
+    if (this.currentSearch) {
+      this.blogService
+        .search({
+          query: this.currentSearch
+        })
+        .pipe(
+          filter((res: HttpResponse<IBlog[]>) => res.ok),
+          map((res: HttpResponse<IBlog[]>) => res.body)
+        )
+        .subscribe((res: IBlog[]) => (this.blogs = res), (res: HttpErrorResponse) => this.onError(res.message));
+      return;
     }
+    this.blogService
+      .query()
+      .pipe(
+        filter((res: HttpResponse<IBlog[]>) => res.ok),
+        map((res: HttpResponse<IBlog[]>) => res.body)
+      )
+      .subscribe(
+        (res: IBlog[]) => {
+          this.blogs = res;
+          this.currentSearch = '';
+        },
+        (res: HttpErrorResponse) => this.onError(res.message)
+      );
+  }
 
-    search(query) {
-        if (!query) {
-            return this.clear();
-        }
-        this.currentSearch = query;
-        this.loadAll();
+  search(query) {
+    if (!query) {
+      return this.clear();
     }
+    this.currentSearch = query;
+    this.loadAll();
+  }
 
-    clear() {
-        this.currentSearch = '';
-        this.loadAll();
-    }
+  clear() {
+    this.currentSearch = '';
+    this.loadAll();
+  }
 
-    ngOnInit() {
-        this.loadAll();
-        this.accountService.identity().then(account => {
-            this.currentAccount = account;
-        });
-        this.registerChangeInBlogs();
-    }
+  ngOnInit() {
+    this.loadAll();
+    this.accountService.identity().then(account => {
+      this.currentAccount = account;
+    });
+    this.registerChangeInBlogs();
+  }
 
-    ngOnDestroy() {
-        this.eventManager.destroy(this.eventSubscriber);
-    }
+  ngOnDestroy() {
+    this.eventManager.destroy(this.eventSubscriber);
+  }
 
-    trackId(index: number, item: IBlog) {
-        return item.id;
-    }
+  trackId(index: number, item: IBlog) {
+    return item.id;
+  }
 
-    registerChangeInBlogs() {
-        this.eventSubscriber = this.eventManager.subscribe('blogListModification', response => this.loadAll());
-    }
+  registerChangeInBlogs() {
+    this.eventSubscriber = this.eventManager.subscribe('blogListModification', response => this.loadAll());
+  }
 
-    protected onError(errorMessage: string) {
-        this.jhiAlertService.error(errorMessage, null, null);
-    }
+  protected onError(errorMessage: string) {
+    this.jhiAlertService.error(errorMessage, null, null);
+  }
 }

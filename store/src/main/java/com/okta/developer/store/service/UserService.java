@@ -53,11 +53,11 @@ public class UserService {
     /**
      * Update basic information (first name, last name, email, language) for the current user.
      *
-     * @param firstName first name of user
-     * @param lastName last name of user
-     * @param email email id of user
-     * @param langKey language key
-     * @param imageUrl image URL of user
+     * @param firstName first name of user.
+     * @param lastName last name of user.
+     * @param email email id of user.
+     * @param langKey language key.
+     * @param imageUrl image URL of user.
      */
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
         SecurityUtils.getCurrentUserLogin()
@@ -78,8 +78,8 @@ public class UserService {
     /**
      * Update all information for a specific user, and return the modified user.
      *
-     * @param userDTO user to update
-     * @return updated user
+     * @param userDTO user to update.
+     * @return updated user.
      */
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
         return Optional.of(userRepository
@@ -137,7 +137,8 @@ public class UserService {
     }
 
     /**
-     * @return a list of all the authorities
+     * Gets a list of all the authorities.
+     * @return a list of all the authorities.
      */
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
@@ -145,10 +146,10 @@ public class UserService {
 
     /**
      * Returns the user for a OAuth2 authentication.
-     * Synchronizes the user in the local repository
+     * Synchronizes the user in the local repository.
      *
-     * @param authentication OAuth2 authentication
-     * @return the user from the authentication
+     * @param authentication OAuth2 authentication.
+     * @return the user from the authentication.
      */
     @SuppressWarnings("unchecked")
     public UserDTO getUserFromAuthentication(OAuth2Authentication authentication) {
@@ -180,9 +181,9 @@ public class UserService {
         for (String authority : userAuthorities) {
             if (!dbAuthorities.contains(authority)) {
                 log.debug("Saving authority '{}' in local database", authority);
-                Authority authoritytoSave = new Authority();
-                authoritytoSave.setName(authority);
-                authorityRepository.save(authoritytoSave);
+                Authority authorityToSave = new Authority();
+                authorityToSave.setName(authority);
+                authorityRepository.save(authorityToSave);
             }
         }
         // save account in to sync users between IdP and JHipster's local database
@@ -264,14 +265,16 @@ public class UserService {
         if (details.get("langKey") != null) {
             user.setLangKey((String) details.get("langKey"));
         } else if (details.get("locale") != null) {
+            // For the locale issue, we suggest you adjust the format based on the OAuth server.
+            // Here we can't cater for all the use-cases, see:
+            // https://github.com/jhipster/generator-jhipster/issues/7866
+            // for the en_US or en_** issue.
+            // Since JHipter only have one "en" language, we will handle it here, for other languages, please handle it accordingly.
             String locale = (String) details.get("locale");
-            if (locale.contains("-")) {
-              String langKey = locale.substring(0, locale.indexOf('-'));
-              user.setLangKey(langKey);
-            } else if (locale.contains("_")) {
-              String langKey = locale.substring(0, locale.indexOf('_'));
-              user.setLangKey(langKey);
+            if(locale.startsWith("en_") || locale.startsWith("en-")) {
+                locale = "en";
             }
+            user.setLangKey(locale.toLowerCase());
         }
         if (details.get("picture") != null) {
             user.setImageUrl((String) details.get("picture"));

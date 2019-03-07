@@ -14,80 +14,80 @@ import { IPost } from 'app/shared/model/blog/post.model';
 
 @Injectable({ providedIn: 'root' })
 export class PostResolve implements Resolve<IPost> {
-    constructor(private service: PostService) {}
+  constructor(private service: PostService) {}
 
-    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<IPost> {
-        const id = route.params['id'] ? route.params['id'] : null;
-        if (id) {
-            return this.service.find(id).pipe(
-                filter((response: HttpResponse<Post>) => response.ok),
-                map((post: HttpResponse<Post>) => post.body)
-            );
-        }
-        return of(new Post());
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<IPost> {
+    const id = route.params['id'] ? route.params['id'] : null;
+    if (id) {
+      return this.service.find(id).pipe(
+        filter((response: HttpResponse<Post>) => response.ok),
+        map((post: HttpResponse<Post>) => post.body)
+      );
     }
+    return of(new Post());
+  }
 }
 
 export const postRoute: Routes = [
-    {
-        path: '',
-        component: PostComponent,
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'gatewayApp.blogPost.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+  {
+    path: '',
+    component: PostComponent,
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'gatewayApp.blogPost.home.title'
     },
-    {
-        path: ':id/view',
-        component: PostDetailComponent,
-        resolve: {
-            post: PostResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'gatewayApp.blogPost.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+    canActivate: [UserRouteAccessService]
+  },
+  {
+    path: ':id/view',
+    component: PostDetailComponent,
+    resolve: {
+      post: PostResolve
     },
-    {
-        path: 'new',
-        component: PostUpdateComponent,
-        resolve: {
-            post: PostResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'gatewayApp.blogPost.home.title'
-        },
-        canActivate: [UserRouteAccessService]
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'gatewayApp.blogPost.home.title'
     },
-    {
-        path: ':id/edit',
-        component: PostUpdateComponent,
-        resolve: {
-            post: PostResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'gatewayApp.blogPost.home.title'
-        },
-        canActivate: [UserRouteAccessService]
-    }
+    canActivate: [UserRouteAccessService]
+  },
+  {
+    path: 'new',
+    component: PostUpdateComponent,
+    resolve: {
+      post: PostResolve
+    },
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'gatewayApp.blogPost.home.title'
+    },
+    canActivate: [UserRouteAccessService]
+  },
+  {
+    path: ':id/edit',
+    component: PostUpdateComponent,
+    resolve: {
+      post: PostResolve
+    },
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'gatewayApp.blogPost.home.title'
+    },
+    canActivate: [UserRouteAccessService]
+  }
 ];
 
 export const postPopupRoute: Routes = [
-    {
-        path: ':id/delete',
-        component: PostDeletePopupComponent,
-        resolve: {
-            post: PostResolve
-        },
-        data: {
-            authorities: ['ROLE_USER'],
-            pageTitle: 'gatewayApp.blogPost.home.title'
-        },
-        canActivate: [UserRouteAccessService],
-        outlet: 'popup'
-    }
+  {
+    path: ':id/delete',
+    component: PostDeletePopupComponent,
+    resolve: {
+      post: PostResolve
+    },
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'gatewayApp.blogPost.home.title'
+    },
+    canActivate: [UserRouteAccessService],
+    outlet: 'popup'
+  }
 ];

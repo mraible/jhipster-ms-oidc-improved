@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
+import { FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import * as moment from 'moment';
 import { DATE_TIME_FORMAT } from 'app/shared/constants/input.constants';
 import { JhiAlertService, JhiDataUtils } from 'ng-jhipster';
-import { IPost } from 'app/shared/model/blog/post.model';
+import { IPost, Post } from 'app/shared/model/blog/post.model';
 import { PostService } from './post.service';
 import { IBlog } from 'app/shared/model/blog/blog.model';
 import { BlogService } from 'app/entities/blog/blog';
@@ -14,108 +15,158 @@ import { ITag } from 'app/shared/model/blog/tag.model';
 import { TagService } from 'app/entities/blog/tag';
 
 @Component({
-    selector: 'jhi-post-update',
-    templateUrl: './post-update.component.html'
+  selector: 'jhi-post-update',
+  templateUrl: './post-update.component.html'
 })
 export class PostUpdateComponent implements OnInit {
-    post: IPost;
-    isSaving: boolean;
+  post: IPost;
+  isSaving: boolean;
 
-    blogs: IBlog[];
+  blogs: IBlog[];
 
-    tags: ITag[];
-    date: string;
+  tags: ITag[];
 
-    constructor(
-        protected dataUtils: JhiDataUtils,
-        protected jhiAlertService: JhiAlertService,
-        protected postService: PostService,
-        protected blogService: BlogService,
-        protected tagService: TagService,
-        protected activatedRoute: ActivatedRoute
-    ) {}
+  editForm = this.fb.group({
+    id: [],
+    title: [null, [Validators.required]],
+    content: [null, [Validators.required]],
+    date: [null, [Validators.required]],
+    blog: [],
+    tags: []
+  });
 
-    ngOnInit() {
-        this.isSaving = false;
-        this.activatedRoute.data.subscribe(({ post }) => {
-            this.post = post;
-            this.date = this.post.date != null ? this.post.date.format(DATE_TIME_FORMAT) : null;
-        });
-        this.blogService
-            .query()
-            .pipe(
-                filter((mayBeOk: HttpResponse<IBlog[]>) => mayBeOk.ok),
-                map((response: HttpResponse<IBlog[]>) => response.body)
-            )
-            .subscribe((res: IBlog[]) => (this.blogs = res), (res: HttpErrorResponse) => this.onError(res.message));
-        this.tagService
-            .query()
-            .pipe(
-                filter((mayBeOk: HttpResponse<ITag[]>) => mayBeOk.ok),
-                map((response: HttpResponse<ITag[]>) => response.body)
-            )
-            .subscribe((res: ITag[]) => (this.tags = res), (res: HttpErrorResponse) => this.onError(res.message));
-    }
+  constructor(
+    protected dataUtils: JhiDataUtils,
+    protected jhiAlertService: JhiAlertService,
+    protected postService: PostService,
+    protected blogService: BlogService,
+    protected tagService: TagService,
+    protected activatedRoute: ActivatedRoute,
+    private fb: FormBuilder
+  ) {}
 
-    byteSize(field) {
-        return this.dataUtils.byteSize(field);
-    }
+  ngOnInit() {
+    this.isSaving = false;
+    this.activatedRoute.data.subscribe(({ post }) => {
+      this.updateForm(post);
+      this.post = post;
+    });
+    this.blogService
+      .query()
+      .pipe(
+        filter((mayBeOk: HttpResponse<IBlog[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IBlog[]>) => response.body)
+      )
+      .subscribe((res: IBlog[]) => (this.blogs = res), (res: HttpErrorResponse) => this.onError(res.message));
+    this.tagService
+      .query()
+      .pipe(
+        filter((mayBeOk: HttpResponse<ITag[]>) => mayBeOk.ok),
+        map((response: HttpResponse<ITag[]>) => response.body)
+      )
+      .subscribe((res: ITag[]) => (this.tags = res), (res: HttpErrorResponse) => this.onError(res.message));
+  }
 
-    openFile(contentType, field) {
-        return this.dataUtils.openFile(contentType, field);
-    }
+  updateForm(post: IPost) {
+    this.editForm.patchValue({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      date: post.date != null ? post.date.format(DATE_TIME_FORMAT) : null,
+      blog: post.blog,
+      tags: post.tags
+    });
+  }
 
-    setFileData(event, entity, field, isImage) {
-        this.dataUtils.setFileData(event, entity, field, isImage);
-    }
+  byteSize(field) {
+    return this.dataUtils.byteSize(field);
+  }
 
-    previousState() {
-        window.history.back();
-    }
+  openFile(contentType, field) {
+    return this.dataUtils.openFile(contentType, field);
+  }
 
-    save() {
-        this.isSaving = true;
-        this.post.date = this.date != null ? moment(this.date, DATE_TIME_FORMAT) : null;
-        if (this.post.id !== undefined) {
-            this.subscribeToSaveResponse(this.postService.update(this.post));
+  setFileData(event, field: string, isImage) {
+    return new Promise((resolve, reject) => {
+      if (event && event.target && event.target.files && event.target.files[0]) {
+        const file = event.target.files[0];
+        if (isImage && !/^image\//.test(file.type)) {
+          reject(`File was expected to be an image but was found to be ${file.type}`);
         } else {
-            this.subscribeToSaveResponse(this.postService.create(this.post));
+          const filedContentType: string = field + 'ContentType';
+          this.dataUtils.toBase64(file, base64Data => {
+            this.editForm.patchValue({
+              [field]: base64Data,
+              [filedContentType]: file.type
+            });
+          });
         }
-    }
+      } else {
+        reject(`Base64 data was not set as file could not be extracted from passed parameter: ${event}`);
+      }
+    }).then(
+      () => console.log('blob added'), // sucess
+      this.onError
+    );
+  }
 
-    protected subscribeToSaveResponse(result: Observable<HttpResponse<IPost>>) {
-        result.subscribe((res: HttpResponse<IPost>) => this.onSaveSuccess(), (res: HttpErrorResponse) => this.onSaveError());
-    }
+  previousState() {
+    window.history.back();
+  }
 
-    protected onSaveSuccess() {
-        this.isSaving = false;
-        this.previousState();
+  save() {
+    this.isSaving = true;
+    const post = this.createFromForm();
+    if (post.id !== undefined) {
+      this.subscribeToSaveResponse(this.postService.update(post));
+    } else {
+      this.subscribeToSaveResponse(this.postService.create(post));
     }
+  }
 
-    protected onSaveError() {
-        this.isSaving = false;
-    }
+  private createFromForm(): IPost {
+    return new Post(
+      this.editForm.get(['id']).value,
+      this.editForm.get(['title']).value,
+      this.editForm.get(['content']).value,
+      this.editForm.get(['date']).value != null ? moment(this.editForm.get(['date']).value, DATE_TIME_FORMAT) : undefined,
+      this.editForm.get(['blog']).value,
+      this.editForm.get(['tags']).value
+    );
+  }
 
-    protected onError(errorMessage: string) {
-        this.jhiAlertService.error(errorMessage, null, null);
-    }
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IPost>>) {
+    result.subscribe((res: HttpResponse<IPost>) => this.onSaveSuccess(), (res: HttpErrorResponse) => this.onSaveError());
+  }
 
-    trackBlogById(index: number, item: IBlog) {
-        return item.id;
-    }
+  protected onSaveSuccess() {
+    this.isSaving = false;
+    this.previousState();
+  }
 
-    trackTagById(index: number, item: ITag) {
-        return item.id;
-    }
+  protected onSaveError() {
+    this.isSaving = false;
+  }
+  protected onError(errorMessage: string) {
+    this.jhiAlertService.error(errorMessage, null, null);
+  }
 
-    getSelected(selectedVals: Array<any>, option: any) {
-        if (selectedVals) {
-            for (let i = 0; i < selectedVals.length; i++) {
-                if (option.id === selectedVals[i].id) {
-                    return selectedVals[i];
-                }
-            }
+  trackBlogById(index: number, item: IBlog) {
+    return item.id;
+  }
+
+  trackTagById(index: number, item: ITag) {
+    return item.id;
+  }
+
+  getSelected(selectedVals: Array<any>, option: any) {
+    if (selectedVals) {
+      for (let i = 0; i < selectedVals.length; i++) {
+        if (option.id === selectedVals[i].id) {
+          return selectedVals[i];
         }
-        return option;
+      }
     }
+    return option;
+  }
 }

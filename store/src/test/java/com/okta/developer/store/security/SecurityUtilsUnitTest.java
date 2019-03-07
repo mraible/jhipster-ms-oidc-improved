@@ -14,14 +14,12 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Test class for the SecurityUtils utility class.
- *
- * @see SecurityUtils
+ * Test class for the {@link SecurityUtils} utility class.
  */
 public class SecurityUtilsUnitTest {
 
     @Test
-    public void testgetCurrentUserLogin() {
+    public void testGetCurrentUserLogin() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin"));
         SecurityContextHolder.setContext(securityContext);

@@ -16,15 +16,23 @@ For further instructions on how to develop with JHipster, have a look at [Using 
 
 ## Building for production
 
-To optimize the store application for production, run:
+### Packaging as jar
+
+To build the final jar and optimize the store application for production, run:
 
     ./mvnw -Pprod clean package
 
 To ensure everything worked, run:
 
-    java -jar target/*.war
+    java -jar target/*.jar
 
 Refer to [Using JHipster in production][] for more details.
+
+### Packaging as war
+
+To package your application as a war in order to deploy it to an application server, run:
+
+    ./mvnw -Pprod,war clean package
 
 ## Testing
 

@@ -5,30 +5,30 @@ import { JhiLanguageHelper } from 'app/core';
 
 import { GatewaySharedModule } from 'app/shared';
 import {
-    BlogComponent,
-    BlogDetailComponent,
-    BlogUpdateComponent,
-    BlogDeletePopupComponent,
-    BlogDeleteDialogComponent,
-    blogRoute,
-    blogPopupRoute
+  BlogComponent,
+  BlogDetailComponent,
+  BlogUpdateComponent,
+  BlogDeletePopupComponent,
+  BlogDeleteDialogComponent,
+  blogRoute,
+  blogPopupRoute
 } from './';
 
 const ENTITY_STATES = [...blogRoute, ...blogPopupRoute];
 
 @NgModule({
-    imports: [GatewaySharedModule, RouterModule.forChild(ENTITY_STATES)],
-    declarations: [BlogComponent, BlogDetailComponent, BlogUpdateComponent, BlogDeleteDialogComponent, BlogDeletePopupComponent],
-    entryComponents: [BlogComponent, BlogUpdateComponent, BlogDeleteDialogComponent, BlogDeletePopupComponent],
-    providers: [{ provide: JhiLanguageService, useClass: JhiLanguageService }],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  imports: [GatewaySharedModule, RouterModule.forChild(ENTITY_STATES)],
+  declarations: [BlogComponent, BlogDetailComponent, BlogUpdateComponent, BlogDeleteDialogComponent, BlogDeletePopupComponent],
+  entryComponents: [BlogComponent, BlogUpdateComponent, BlogDeleteDialogComponent, BlogDeletePopupComponent],
+  providers: [{ provide: JhiLanguageService, useClass: JhiLanguageService }],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class BlogBlogModule {
-    constructor(private languageService: JhiLanguageService, private languageHelper: JhiLanguageHelper) {
-        this.languageHelper.language.subscribe((languageKey: string) => {
-            if (languageKey !== undefined) {
-                this.languageService.changeLanguage(languageKey);
-            }
-        });
-    }
+  constructor(private languageService: JhiLanguageService, private languageHelper: JhiLanguageHelper) {
+    this.languageHelper.language.subscribe((languageKey: string) => {
+      if (languageKey !== undefined) {
+        this.languageService.changeLanguage(languageKey);
+      }
+    });
+  }
 }

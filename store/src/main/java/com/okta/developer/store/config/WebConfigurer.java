@@ -4,14 +4,13 @@ import io.github.jhipster.config.JHipsterProperties;
 import io.undertow.UndertowOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.boot.web.server.*;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.MediaType;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -20,7 +19,6 @@ import org.springframework.web.filter.CorsFilter;
 import javax.servlet.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 
 /**
  * Configuration of web application with Servlet 3.0 APIs.
@@ -35,7 +33,6 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
     private final JHipsterProperties jHipsterProperties;
 
     public WebConfigurer(Environment env, JHipsterProperties jHipsterProperties) {
-
         this.env = env;
         this.jHipsterProperties = jHipsterProperties;
     }
@@ -55,20 +52,6 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
     @Override
     public void customize(WebServerFactory server) {
         setMimeMappings(server);
-
-        /*
-         * Enable HTTP/2 for Undertow - https://twitter.com/ankinson/status/829256167700492288
-         * HTTP/2 requires HTTPS, so HTTP requests will fallback to HTTP/1.1.
-         * See the JHipsterProperties class and your application-*.yml configuration files
-         * for more information.
-         */
-        if (jHipsterProperties.getHttp().getVersion().equals(JHipsterProperties.Http.Version.V_2_0) &&
-            server instanceof UndertowServletWebServerFactory) {
-
-            ((UndertowServletWebServerFactory) server)
-                .addBuilderCustomizers(builder ->
-                    builder.setServerOption(UndertowOptions.ENABLE_HTTP2, true));
-        }
     }
 
     private void setMimeMappings(WebServerFactory server) {

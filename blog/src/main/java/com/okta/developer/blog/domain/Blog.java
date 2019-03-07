@@ -8,7 +8,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
-import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -18,7 +18,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "blog")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Document(indexName = "blog")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "blog")
 public class Blog implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -26,6 +26,7 @@ public class Blog implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
+    @org.springframework.data.elasticsearch.annotations.Field(type = FieldType.Keyword)
     private Long id;
 
     @NotNull
@@ -96,19 +97,15 @@ public class Blog implements Serializable {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof Blog)) {
             return false;
         }
-        Blog blog = (Blog) o;
-        if (blog.getId() == null || getId() == null) {
-            return false;
-        }
-        return Objects.equals(getId(), blog.getId());
+        return id != null && id.equals(((Blog) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getId());
+        return 31;
     }
 
     @Override

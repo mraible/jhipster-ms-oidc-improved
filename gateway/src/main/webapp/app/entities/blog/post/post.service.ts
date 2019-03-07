@@ -14,69 +14,69 @@ type EntityArrayResponseType = HttpResponse<IPost[]>;
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
-    public resourceUrl = SERVER_API_URL + 'blog/api/posts';
-    public resourceSearchUrl = SERVER_API_URL + 'blog/api/_search/posts';
+  public resourceUrl = SERVER_API_URL + 'services/blog/api/posts';
+  public resourceSearchUrl = SERVER_API_URL + 'services/blog/api/_search/posts';
 
-    constructor(protected http: HttpClient) {}
+  constructor(protected http: HttpClient) {}
 
-    create(post: IPost): Observable<EntityResponseType> {
-        const copy = this.convertDateFromClient(post);
-        return this.http
-            .post<IPost>(this.resourceUrl, copy, { observe: 'response' })
-            .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  create(post: IPost): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(post);
+    return this.http
+      .post<IPost>(this.resourceUrl, copy, { observe: 'response' })
+      .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  }
+
+  update(post: IPost): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(post);
+    return this.http
+      .put<IPost>(this.resourceUrl, copy, { observe: 'response' })
+      .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  }
+
+  find(id: number): Observable<EntityResponseType> {
+    return this.http
+      .get<IPost>(`${this.resourceUrl}/${id}`, { observe: 'response' })
+      .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  }
+
+  query(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<IPost[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
+  }
+
+  delete(id: number): Observable<HttpResponse<any>> {
+    return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  search(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<IPost[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+      .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
+  }
+
+  protected convertDateFromClient(post: IPost): IPost {
+    const copy: IPost = Object.assign({}, post, {
+      date: post.date != null && post.date.isValid() ? post.date.toJSON() : null
+    });
+    return copy;
+  }
+
+  protected convertDateFromServer(res: EntityResponseType): EntityResponseType {
+    if (res.body) {
+      res.body.date = res.body.date != null ? moment(res.body.date) : null;
     }
+    return res;
+  }
 
-    update(post: IPost): Observable<EntityResponseType> {
-        const copy = this.convertDateFromClient(post);
-        return this.http
-            .put<IPost>(this.resourceUrl, copy, { observe: 'response' })
-            .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  protected convertDateArrayFromServer(res: EntityArrayResponseType): EntityArrayResponseType {
+    if (res.body) {
+      res.body.forEach((post: IPost) => {
+        post.date = post.date != null ? moment(post.date) : null;
+      });
     }
-
-    find(id: number): Observable<EntityResponseType> {
-        return this.http
-            .get<IPost>(`${this.resourceUrl}/${id}`, { observe: 'response' })
-            .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
-    }
-
-    query(req?: any): Observable<EntityArrayResponseType> {
-        const options = createRequestOption(req);
-        return this.http
-            .get<IPost[]>(this.resourceUrl, { params: options, observe: 'response' })
-            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
-    }
-
-    delete(id: number): Observable<HttpResponse<any>> {
-        return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
-    }
-
-    search(req?: any): Observable<EntityArrayResponseType> {
-        const options = createRequestOption(req);
-        return this.http
-            .get<IPost[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
-            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
-    }
-
-    protected convertDateFromClient(post: IPost): IPost {
-        const copy: IPost = Object.assign({}, post, {
-            date: post.date != null && post.date.isValid() ? post.date.toJSON() : null
-        });
-        return copy;
-    }
-
-    protected convertDateFromServer(res: EntityResponseType): EntityResponseType {
-        if (res.body) {
-            res.body.date = res.body.date != null ? moment(res.body.date) : null;
-        }
-        return res;
-    }
-
-    protected convertDateArrayFromServer(res: EntityArrayResponseType): EntityArrayResponseType {
-        if (res.body) {
-            res.body.forEach((post: IPost) => {
-                post.date = post.date != null ? moment(post.date) : null;
-            });
-        }
-        return res;
-    }
+    return res;
+  }
 }
