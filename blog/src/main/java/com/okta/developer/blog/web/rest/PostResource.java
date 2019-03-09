@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -102,7 +103,7 @@ public class PostResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of posts in body.
      */
     @GetMapping("/posts")
-    public ResponseEntity<List<Post>> getAllPosts(Pageable pageable, @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
+    public ResponseEntity<List<Post>> getAllPosts(Pageable pageable, HttpServletRequest request, @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get a page of Posts");
         Page<Post> page;
         if (eagerload) {
@@ -110,7 +111,7 @@ public class PostResource {
         } else {
             page = postRepository.findAll(pageable);
         }
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, String.format("/api/posts?eagerload=%b", eagerload));
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -150,10 +151,10 @@ public class PostResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/posts")
-    public ResponseEntity<List<Post>> searchPosts(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<Post>> searchPosts(@RequestParam String query, Pageable pageable, HttpServletRequest request) {
         log.debug("REST request to search for a page of Posts for query {}", query);
         Page<Post> page = postSearchRepository.search(queryStringQuery(query), pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/posts");
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 

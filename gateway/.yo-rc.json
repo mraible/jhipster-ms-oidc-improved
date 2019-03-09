@@ -21,7 +21,7 @@
     "baseName": "gateway",
     "applicationType": "gateway",
     "authenticationType": "oauth2",
-    "jhipsterVersion": "5.8.1",
+    "jhipsterVersion": "5.8.2",
     "buildTool": "maven",
     "skipUserManagement": true,
     "clientPackageManager": "npm",
