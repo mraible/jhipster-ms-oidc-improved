@@ -4,8 +4,7 @@
       "home": {
         "title": "Tags",
         "createLabel": "Create a new Tag",
-        "createOrEditLabel": "Create or edit a Tag",
-        "search": "Search for Tag"
+        "createOrEditLabel": "Create or edit a Tag"
       },
       "delete": {
         "question": "Are you sure you want to delete Tag {{ id }}?"

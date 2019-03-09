@@ -4,8 +4,7 @@
       "home": {
         "title": "Posts",
         "createLabel": "Create a new Post",
-        "createOrEditLabel": "Create or edit a Post",
-        "search": "Search for Post"
+        "createOrEditLabel": "Create or edit a Post"
       },
       "delete": {
         "question": "Are you sure you want to delete Post {{ id }}?"

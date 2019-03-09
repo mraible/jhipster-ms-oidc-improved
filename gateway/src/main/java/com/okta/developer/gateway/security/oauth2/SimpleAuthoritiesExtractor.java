@@ -1,4 +1,4 @@
-package com.okta.developer.blog.security.oauth2;
+package com.okta.developer.gateway.security.oauth2;
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.AuthoritiesExtractor;
 import org.springframework.security.core.GrantedAuthority;

@@ -4,8 +4,7 @@
       "home": {
         "title": "Blogs",
         "createLabel": "Créer un nouveau Blog",
-        "createOrEditLabel": "Créer ou éditer un Blog",
-        "search": "Recherche pour Blog"
+        "createOrEditLabel": "Créer ou éditer un Blog"
       },
       "delete": {
         "question": "Etes-vous certain de vouloir supprimer le Blog {{ id }} ?"

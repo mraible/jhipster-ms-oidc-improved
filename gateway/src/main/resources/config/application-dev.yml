@@ -67,11 +67,6 @@ spring:
       hibernate.cache.hazelcast.instance_name: gateway
       hibernate.cache.use_minimal_puts: true
       hibernate.cache.hazelcast.use_lite_member: true
-  data:
-    elasticsearch:
-      properties:
-        path:
-          home: target/elasticsearch
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
@@ -110,7 +105,7 @@ jhipster:
       limit: 100000
       duration-in-seconds: 3600
     authorized-microservices-endpoints: # Access Control Policy, if left empty for a route, all endpoints will be accessible
-      services/blog: /api,/v2/api-docs # recommended dev configuration
+      app1: /api,/v2/api-docs # recommended dev configuration
   cache: # Cache configuration
     hazelcast: # Hazelcast distributed cache
       time-to-live-seconds: 3600

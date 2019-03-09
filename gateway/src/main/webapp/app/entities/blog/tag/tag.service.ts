@@ -12,7 +12,6 @@ type EntityArrayResponseType = HttpResponse<ITag[]>;
 @Injectable({ providedIn: 'root' })
 export class TagService {
   public resourceUrl = SERVER_API_URL + 'services/blog/api/tags';
-  public resourceSearchUrl = SERVER_API_URL + 'services/blog/api/_search/tags';
 
   constructor(protected http: HttpClient) {}
 
@@ -35,10 +34,5 @@ export class TagService {
 
   delete(id: number): Observable<HttpResponse<any>> {
     return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
-  }
-
-  search(req?: any): Observable<EntityArrayResponseType> {
-    const options = createRequestOption(req);
-    return this.http.get<ITag[]>(this.resourceSearchUrl, { params: options, observe: 'response' });
   }
 }

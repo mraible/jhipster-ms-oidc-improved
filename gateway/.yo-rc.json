@@ -12,7 +12,7 @@
     "packageName": "com.okta.developer.gateway",
     "packageFolder": "com/okta/developer/gateway",
     "prodDatabaseType": "postgresql",
-    "searchEngine": "elasticsearch",
+    "searchEngine": false,
     "serviceDiscoveryType": "eureka",
     "skipClient": false,
     "skipServer": false,

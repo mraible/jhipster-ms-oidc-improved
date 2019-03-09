@@ -4,8 +4,7 @@
       "home": {
         "title": "Posts",
         "createLabel": "Créer un nouveau Post",
-        "createOrEditLabel": "Créer ou éditer un Post",
-        "search": "Recherche pour Post"
+        "createOrEditLabel": "Créer ou éditer un Post"
       },
       "delete": {
         "question": "Etes-vous certain de vouloir supprimer le Post {{ id }} ?"

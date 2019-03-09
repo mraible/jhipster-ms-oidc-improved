@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
@@ -17,32 +16,15 @@ export class BlogComponent implements OnInit, OnDestroy {
   blogs: IBlog[];
   currentAccount: any;
   eventSubscriber: Subscription;
-  currentSearch: string;
 
   constructor(
     protected blogService: BlogService,
     protected jhiAlertService: JhiAlertService,
     protected eventManager: JhiEventManager,
-    protected activatedRoute: ActivatedRoute,
     protected accountService: AccountService
-  ) {
-    this.currentSearch =
-      this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search'] ? this.activatedRoute.snapshot.params['search'] : '';
-  }
+  ) {}
 
   loadAll() {
-    if (this.currentSearch) {
-      this.blogService
-        .search({
-          query: this.currentSearch
-        })
-        .pipe(
-          filter((res: HttpResponse<IBlog[]>) => res.ok),
-          map((res: HttpResponse<IBlog[]>) => res.body)
-        )
-        .subscribe((res: IBlog[]) => (this.blogs = res), (res: HttpErrorResponse) => this.onError(res.message));
-      return;
-    }
     this.blogService
       .query()
       .pipe(
@@ -52,23 +34,9 @@ export class BlogComponent implements OnInit, OnDestroy {
       .subscribe(
         (res: IBlog[]) => {
           this.blogs = res;
-          this.currentSearch = '';
         },
         (res: HttpErrorResponse) => this.onError(res.message)
       );
-  }
-
-  search(query) {
-    if (!query) {
-      return this.clear();
-    }
-    this.currentSearch = query;
-    this.loadAll();
-  }
-
-  clear() {
-    this.currentSearch = '';
-    this.loadAll();
   }
 
   ngOnInit() {

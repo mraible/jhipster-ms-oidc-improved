@@ -1,34 +1,32 @@
 package com.okta.developer.gateway.config;
 
 import com.okta.developer.gateway.security.AuthoritiesConstants;
+
+import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.filter.CorsFilter;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+@EnableOAuth2Sso
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+@Configuration
+public class OAuth2SsoConfiguration extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
 
-    public SecurityConfiguration(CorsFilter corsFilter) {
+    public OAuth2SsoConfiguration(CorsFilter corsFilter) {
         this.corsFilter = corsFilter;
     }
 
@@ -48,8 +46,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .csrf()
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-        .and()
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .and()
             .addFilterBefore(corsFilter, CsrfFilter.class)
             .headers()
             .frameOptions()
@@ -57,33 +55,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()
             .authorizeRequests()
             .antMatchers("/api/**").authenticated()
-            .antMatchers("/authorize").authenticated()
             .antMatchers("/management/health").permitAll()
             .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
-            .anyRequest().permitAll()
-        .and()
-            .oauth2Login();
+            .anyRequest().permitAll();
     }
 
+    /**
+     * This {@link OAuth2RestTemplate} is used by {@link org.springframework.cloud.security.oauth2.proxy.OAuth2TokenRelayFilter}
+     * from Spring Cloud Security to refresh the access token when needed.
+     * @param oAuth2ProtectedResourceDetails the resource details.
+     * @param oAuth2ClientContext the client context.
+     * @return the {@link OAuth2RestTemplate}.
+     */
     @Bean
-    @SuppressWarnings("unchecked")
-    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-        return (authorities) -> {
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-
-            authorities.forEach(authority -> {
-                OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-                OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-                Collection<String> groups = (Collection<String>) userInfo.getClaims().get("groups");
-                if (groups == null) {
-                    groups = (Collection<String>) userInfo.getClaims().get("roles");
-                }
-                mappedAuthorities.addAll(groups.stream()
-                    .filter(group -> group.startsWith("ROLE_"))
-                    .map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-            });
-
-            return mappedAuthorities;
-        };
+    public OAuth2RestTemplate oAuth2RestTemplate(OAuth2ProtectedResourceDetails oAuth2ProtectedResourceDetails,
+        OAuth2ClientContext oAuth2ClientContext) {
+        return new OAuth2RestTemplate(oAuth2ProtectedResourceDetails, oAuth2ClientContext);
     }
 }

@@ -4,8 +4,7 @@
       "home": {
         "title": "Products",
         "createLabel": "Créer un nouveau Product",
-        "createOrEditLabel": "Créer ou éditer un Product",
-        "search": "Recherche pour Product"
+        "createOrEditLabel": "Créer ou éditer un Product"
       },
       "delete": {
         "question": "Etes-vous certain de vouloir supprimer le Product {{ id }} ?"

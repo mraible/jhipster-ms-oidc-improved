@@ -1,28 +1,22 @@
 package com.okta.developer.blog.client;
 
-import com.okta.developer.blog.security.oauth2.AuthorizationHeaderUtil;
-
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-
-import java.util.Optional;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 
 public class TokenRelayRequestInterceptor implements RequestInterceptor {
 
-    public static final String AUTHORIZATION = "Authorization";
+    private static final String AUTHORIZATION = "Authorization";
+    private final OAuth2AuthorizedClient authorizedClient;
 
-    private final AuthorizationHeaderUtil authorizationHeaderUtil;
-
-    public TokenRelayRequestInterceptor(AuthorizationHeaderUtil authorizationHeaderUtil) {
+    TokenRelayRequestInterceptor(OAuth2AuthorizedClient authorizedClient) {
         super();
-        this.authorizationHeaderUtil = authorizationHeaderUtil;
+        this.authorizedClient = authorizedClient;
     }
 
     @Override
     public void apply(RequestTemplate template) {
-        Optional<String> authorizationHeader = authorizationHeaderUtil.getAuthorizationHeaderFromOAuth2Context();
-        if (authorizationHeader.isPresent()) {
-            template.header(AUTHORIZATION, authorizationHeader.get());
-        }
+        String authorizationHeader = authorizedClient.getAccessToken().getTokenType() + " " + authorizedClient.getAccessToken().getTokenValue();
+        template.header(AUTHORIZATION, authorizationHeader);
     }
 }
