@@ -16,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -234,7 +232,7 @@ public class UserService {
             if (locale.startsWith("en_") || locale.startsWith("en-")) {
                 locale = Constants.DEFAULT_LANGUAGE;
             }
-            user.setLangKey(locale.toLowerCase());
+            user.setLangKey("en");
         } else {
             // set langKey to default if not specified by IdP
             user.setLangKey(Constants.DEFAULT_LANGUAGE);

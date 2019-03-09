@@ -2,6 +2,7 @@ package com.okta.developer.blog.config;
 
 import com.okta.developer.blog.security.AudienceValidator;
 import com.okta.developer.blog.security.AuthoritiesConstants;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -9,12 +10,20 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.JwtValidators;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.jwt.*;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -22,6 +31,9 @@ import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final SecurityProblemSupport problemSupport;
+
+    @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
+    private String issuerUri;
 
     public SecurityConfiguration(SecurityProblemSupport problemSupport) {
         this.problemSupport = problemSupport;
@@ -52,10 +64,32 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .oauth2ResourceServer().jwt();
     }
 
-    /*@Bean
+    @Bean
+    @SuppressWarnings("unchecked")
+    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
+        return (authorities) -> {
+            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+
+            authorities.forEach(authority -> {
+                OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
+                OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
+                Collection<String> groups = (Collection<String>) userInfo.getClaims().get("groups");
+                if (groups == null) {
+                    groups = (Collection<String>) userInfo.getClaims().get("roles");
+                }
+                mappedAuthorities.addAll(groups.stream()
+                    .filter(group -> group.startsWith("ROLE_"))
+                    .map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+            });
+
+            return mappedAuthorities;
+        };
+    }
+
+    @Bean
     JwtDecoder jwtDecoder() {
         NimbusJwtDecoderJwkSupport jwtDecoder = (NimbusJwtDecoderJwkSupport)
-            JwtDecoders.withOidcIssuerLocation(issuerUri);
+            JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator();
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
@@ -64,5 +98,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         jwtDecoder.setJwtValidator(withAudience);
 
         return jwtDecoder;
-    }*/
+    }
 }
