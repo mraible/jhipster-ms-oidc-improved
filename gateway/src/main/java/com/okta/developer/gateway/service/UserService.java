@@ -5,7 +5,6 @@ import com.okta.developer.gateway.domain.Authority;
 import com.okta.developer.gateway.domain.User;
 import com.okta.developer.gateway.repository.AuthorityRepository;
 import com.okta.developer.gateway.repository.UserRepository;
-import com.okta.developer.gateway.repository.search.UserSearchRepository;
 import com.okta.developer.gateway.security.SecurityUtils;
 import com.okta.developer.gateway.service.dto.UserDTO;
 
@@ -39,15 +38,12 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final UserSearchRepository userSearchRepository;
-
     private final AuthorityRepository authorityRepository;
 
     private final CacheManager cacheManager;
 
-    public UserService(UserRepository userRepository, UserSearchRepository userSearchRepository, AuthorityRepository authorityRepository, CacheManager cacheManager) {
+    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository, CacheManager cacheManager) {
         this.userRepository = userRepository;
-        this.userSearchRepository = userSearchRepository;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
     }
@@ -70,7 +66,6 @@ public class UserService {
                 user.setEmail(email.toLowerCase());
                 user.setLangKey(langKey);
                 user.setImageUrl(imageUrl);
-                userSearchRepository.save(user);
                 this.clearUserCaches(user);
                 log.debug("Changed Information for User: {}", user);
             });
@@ -103,7 +98,6 @@ public class UserService {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
-                userSearchRepository.save(user);
                 this.clearUserCaches(user);
                 log.debug("Changed Information for User: {}", user);
                 return user;
@@ -114,7 +108,6 @@ public class UserService {
     public void deleteUser(String login) {
         userRepository.findOneByLogin(login).ifPresent(user -> {
             userRepository.delete(user);
-            userSearchRepository.delete(user);
             this.clearUserCaches(user);
             log.debug("Deleted User: {}", user);
         });
@@ -277,7 +270,7 @@ public class UserService {
             // for other languages, please handle it accordingly.
             String locale = (String) details.get("locale");
             if (locale.startsWith("en_") || locale.startsWith("en-")) {
-                locale = Constants.DEFAULT_LANGUAGE;
+                locale = "en";
             }
             user.setLangKey(locale.toLowerCase());
         } else {

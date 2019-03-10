@@ -54,9 +54,6 @@ spring:
       hibernate.cache.hazelcast.instance_name: gateway
       hibernate.cache.use_minimal_puts: true
       hibernate.cache.hazelcast.use_lite_member: true
-  data:
-    jest:
-      uri: http://localhost:9200
   # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   liquibase:
     contexts: prod
