@@ -9,7 +9,7 @@ export class LoginService {
 
   login() {
     const port = location.port ? ':' + location.port : '';
-    location.href = '//' + location.hostname + port + location.pathname + 'login';
+    location.href = '//' + location.hostname + port + location.pathname + 'authorize';
   }
 
   logout() {
