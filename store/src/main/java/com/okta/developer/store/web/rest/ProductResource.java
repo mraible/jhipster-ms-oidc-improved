@@ -2,7 +2,6 @@ package com.okta.developer.store.web.rest;
 
 import com.okta.developer.store.domain.Product;
 import com.okta.developer.store.repository.ProductRepository;
-import com.okta.developer.store.repository.search.ProductSearchRepository;
 import com.okta.developer.store.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -25,10 +24,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing {@link com.okta.developer.store.domain.Product}.
@@ -46,11 +41,8 @@ public class ProductResource {
 
     private final ProductRepository productRepository;
 
-    private final ProductSearchRepository productSearchRepository;
-
-    public ProductResource(ProductRepository productRepository, ProductSearchRepository productSearchRepository) {
+    public ProductResource(ProductRepository productRepository) {
         this.productRepository = productRepository;
-        this.productSearchRepository = productSearchRepository;
     }
 
     /**
@@ -67,7 +59,6 @@ public class ProductResource {
             throw new BadRequestAlertException("A new product cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Product result = productRepository.save(product);
-        productSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/products/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -89,7 +80,6 @@ public class ProductResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Product result = productRepository.save(product);
-        productSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, product.getId().toString()))
             .body(result);
@@ -132,24 +122,6 @@ public class ProductResource {
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
         log.debug("REST request to delete Product : {}", id);
         productRepository.deleteById(id);
-        productSearchRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
     }
-
-    /**
-     * {@code SEARCH  /_search/products?query=:query} : search for the product corresponding
-     * to the query.
-     *
-     * @param query the query of the product search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/products")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String query, Pageable pageable, HttpServletRequest request) {
-        log.debug("REST request to search for a page of Products for query {}", query);
-        Page<Product> page = productSearchRepository.search(queryStringQuery(query), pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
 }

@@ -18,7 +18,6 @@ application {
     applicationType microservice,
     authenticationType oauth2,
     prodDatabaseType postgresql,
-    searchEngine elasticsearch,
     serverPort 8081,
     serviceDiscoveryType eureka
   }
@@ -35,7 +34,6 @@ application {
     devDatabaseType mongodb,
     prodDatabaseType mongodb,
     enableHibernateCache false,
-    searchEngine elasticsearch,
     serverPort 8082,
     serviceDiscoveryType eureka
   }

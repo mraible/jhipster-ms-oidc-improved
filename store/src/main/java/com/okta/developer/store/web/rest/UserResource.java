@@ -1,8 +1,6 @@
 package com.okta.developer.store.web.rest;
 
 import com.okta.developer.store.config.Constants;
-import com.okta.developer.store.domain.User;
-import com.okta.developer.store.repository.search.UserSearchRepository;
 import com.okta.developer.store.security.AuthoritiesConstants;
 import com.okta.developer.store.service.UserService;
 import com.okta.developer.store.service.dto.UserDTO;
@@ -24,15 +22,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing users.
  * <p>
- * This class accesses the {@link User} entity, and needs to fetch its collection of authorities.
+ * This class accesses the {@link com.okta.developer.store.domain.User} entity, and needs to fetch its collection of authorities.
  * <p>
  * For a normal use-case, it would be better to have an eager relationship between User and Authority,
  * and send everything to the client side: there would be no View Model and DTO, a lot less code, and an outer-join
@@ -64,12 +58,9 @@ public class UserResource {
 
     private final UserService userService;
 
-    private final UserSearchRepository userSearchRepository;
-
-    public UserResource(UserService userService, UserSearchRepository userSearchRepository) {
+    public UserResource(UserService userService) {
 
         this.userService = userService;
-        this.userSearchRepository = userSearchRepository;
     }
 
     /**
@@ -107,18 +98,5 @@ public class UserResource {
         return ResponseUtil.wrapOrNotFound(
             userService.getUserWithAuthoritiesByLogin(login)
                 .map(UserDTO::new));
-    }
-
-    /**
-     * {@code SEARCH /_search/users/:query} : search for the User corresponding to the query.
-     *
-     * @param query the query to search.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/users/{query}")
-    public List<User> search(@PathVariable String query) {
-        return StreamSupport
-            .stream(userSearchRepository.search(queryStringQuery(query)).spliterator(), false)
-            .collect(Collectors.toList());
     }
 }

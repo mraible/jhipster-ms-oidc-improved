@@ -36,8 +36,6 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017
       database: store
-    jest:
-      uri: http://localhost:9200
   mail:
     host: localhost
     port: 25
