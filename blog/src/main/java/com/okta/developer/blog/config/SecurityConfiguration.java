@@ -4,7 +4,6 @@ import com.okta.developer.blog.security.AuthoritiesConstants;
 import com.okta.developer.blog.security.oauth2.AudienceValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
