@@ -5,7 +5,6 @@ application {
     applicationType gateway,
     authenticationType oauth2,
     prodDatabaseType postgresql,
-    searchEngine elasticsearch,
     serviceDiscoveryType eureka,
     testFrameworks [protractor]
   }
