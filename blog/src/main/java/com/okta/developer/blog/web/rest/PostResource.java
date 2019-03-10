@@ -2,7 +2,6 @@ package com.okta.developer.blog.web.rest;
 
 import com.okta.developer.blog.domain.Post;
 import com.okta.developer.blog.repository.PostRepository;
-import com.okta.developer.blog.repository.search.PostSearchRepository;
 import com.okta.developer.blog.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -25,10 +24,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing {@link com.okta.developer.blog.domain.Post}.
@@ -46,11 +41,8 @@ public class PostResource {
 
     private final PostRepository postRepository;
 
-    private final PostSearchRepository postSearchRepository;
-
-    public PostResource(PostRepository postRepository, PostSearchRepository postSearchRepository) {
+    public PostResource(PostRepository postRepository) {
         this.postRepository = postRepository;
-        this.postSearchRepository = postSearchRepository;
     }
 
     /**
@@ -67,7 +59,6 @@ public class PostResource {
             throw new BadRequestAlertException("A new post cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Post result = postRepository.save(post);
-        postSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/posts/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -89,7 +80,6 @@ public class PostResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Post result = postRepository.save(post);
-        postSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, post.getId().toString()))
             .body(result);
@@ -138,24 +128,6 @@ public class PostResource {
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         log.debug("REST request to delete Post : {}", id);
         postRepository.deleteById(id);
-        postSearchRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
-
-    /**
-     * {@code SEARCH  /_search/posts?query=:query} : search for the post corresponding
-     * to the query.
-     *
-     * @param query the query of the post search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/posts")
-    public ResponseEntity<List<Post>> searchPosts(@RequestParam String query, Pageable pageable, HttpServletRequest request) {
-        log.debug("REST request to search for a page of Posts for query {}", query);
-        Page<Post> page = postSearchRepository.search(queryStringQuery(query), pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
 }

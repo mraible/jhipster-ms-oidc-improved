@@ -28,10 +28,6 @@ spring:
       host: localhost
       port: 0
       database: store
-    elasticsearch:
-      properties:
-        path:
-          home: target/elasticsearch
   mail:
     host: localhost
   main:

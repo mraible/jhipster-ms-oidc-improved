@@ -2,7 +2,6 @@ package com.okta.developer.blog.web.rest;
 
 import com.okta.developer.blog.domain.Tag;
 import com.okta.developer.blog.repository.TagRepository;
-import com.okta.developer.blog.repository.search.TagSearchRepository;
 import com.okta.developer.blog.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -25,10 +24,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing {@link com.okta.developer.blog.domain.Tag}.
@@ -46,11 +41,8 @@ public class TagResource {
 
     private final TagRepository tagRepository;
 
-    private final TagSearchRepository tagSearchRepository;
-
-    public TagResource(TagRepository tagRepository, TagSearchRepository tagSearchRepository) {
+    public TagResource(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
-        this.tagSearchRepository = tagSearchRepository;
     }
 
     /**
@@ -67,7 +59,6 @@ public class TagResource {
             throw new BadRequestAlertException("A new tag cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Tag result = tagRepository.save(tag);
-        tagSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/tags/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -89,7 +80,6 @@ public class TagResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Tag result = tagRepository.save(tag);
-        tagSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tag.getId().toString()))
             .body(result);
@@ -132,24 +122,6 @@ public class TagResource {
     public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
         log.debug("REST request to delete Tag : {}", id);
         tagRepository.deleteById(id);
-        tagSearchRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
-
-    /**
-     * {@code SEARCH  /_search/tags?query=:query} : search for the tag corresponding
-     * to the query.
-     *
-     * @param query the query of the tag search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/tags")
-    public ResponseEntity<List<Tag>> searchTags(@RequestParam String query, Pageable pageable, HttpServletRequest request) {
-        log.debug("REST request to search for a page of Tags for query {}", query);
-        Page<Tag> page = tagSearchRepository.search(queryStringQuery(query), pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(request, page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
 }

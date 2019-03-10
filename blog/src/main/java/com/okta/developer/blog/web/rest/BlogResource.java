@@ -2,7 +2,6 @@ package com.okta.developer.blog.web.rest;
 
 import com.okta.developer.blog.domain.Blog;
 import com.okta.developer.blog.repository.BlogRepository;
-import com.okta.developer.blog.repository.search.BlogSearchRepository;
 import com.okta.developer.blog.repository.UserRepository;
 import com.okta.developer.blog.web.rest.errors.BadRequestAlertException;
 
@@ -20,10 +19,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing {@link com.okta.developer.blog.domain.Blog}.
@@ -41,13 +36,10 @@ public class BlogResource {
 
     private final BlogRepository blogRepository;
 
-    private final BlogSearchRepository blogSearchRepository;
-
     private final UserRepository userRepository;
 
-    public BlogResource(BlogRepository blogRepository, BlogSearchRepository blogSearchRepository, UserRepository userRepository) {
+    public BlogResource(BlogRepository blogRepository, UserRepository userRepository) {
         this.blogRepository = blogRepository;
-        this.blogSearchRepository = blogSearchRepository;
         this.userRepository = userRepository;
     }
 
@@ -70,7 +62,6 @@ public class BlogResource {
             userRepository.save(blog.getUser());
         }
         Blog result = blogRepository.save(blog);
-        blogSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/blogs/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -97,7 +88,6 @@ public class BlogResource {
             userRepository.save(blog.getUser());
         }
         Blog result = blogRepository.save(blog);
-        blogSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blog.getId().toString()))
             .body(result);
@@ -137,23 +127,6 @@ public class BlogResource {
     public ResponseEntity<Void> deleteBlog(@PathVariable Long id) {
         log.debug("REST request to delete Blog : {}", id);
         blogRepository.deleteById(id);
-        blogSearchRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }
-
-    /**
-     * {@code SEARCH  /_search/blogs?query=:query} : search for the blog corresponding
-     * to the query.
-     *
-     * @param query the query of the blog search.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/blogs")
-    public List<Blog> searchBlogs(@RequestParam String query) {
-        log.debug("REST request to search Blogs for query {}", query);
-        return StreamSupport
-            .stream(blogSearchRepository.search(queryStringQuery(query)).spliterator(), false)
-            .collect(Collectors.toList());
-    }
-
 }

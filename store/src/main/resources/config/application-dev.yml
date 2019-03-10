@@ -45,10 +45,6 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017
       database: store
-    elasticsearch:
-      properties:
-        path:
-          home: target/elasticsearch
   mail:
     host: localhost
     port: 25

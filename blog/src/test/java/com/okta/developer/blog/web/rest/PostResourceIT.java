@@ -4,7 +4,6 @@ import com.okta.developer.blog.BlogApp;
 
 import com.okta.developer.blog.domain.Post;
 import com.okta.developer.blog.repository.PostRepository;
-import com.okta.developer.blog.repository.search.PostSearchRepository;
 import com.okta.developer.blog.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -30,13 +29,11 @@ import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
 import static com.okta.developer.blog.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -64,14 +61,6 @@ public class PostResourceIT {
     @Mock
     private PostRepository postRepositoryMock;
 
-    /**
-     * This repository is mocked in the com.okta.developer.blog.repository.search test package.
-     *
-     * @see com.okta.developer.blog.repository.search.PostSearchRepositoryMockConfiguration
-     */
-    @Autowired
-    private PostSearchRepository mockPostSearchRepository;
-
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -94,7 +83,7 @@ public class PostResourceIT {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PostResource postResource = new PostResource(postRepository, mockPostSearchRepository);
+        final PostResource postResource = new PostResource(postRepository);
         this.restPostMockMvc = MockMvcBuilders.standaloneSetup(postResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -140,9 +129,6 @@ public class PostResourceIT {
         assertThat(testPost.getTitle()).isEqualTo(DEFAULT_TITLE);
         assertThat(testPost.getContent()).isEqualTo(DEFAULT_CONTENT);
         assertThat(testPost.getDate()).isEqualTo(DEFAULT_DATE);
-
-        // Validate the Post in Elasticsearch
-        verify(mockPostSearchRepository, times(1)).save(testPost);
     }
 
     @Test
@@ -162,9 +148,6 @@ public class PostResourceIT {
         // Validate the Post in the database
         List<Post> postList = postRepository.findAll();
         assertThat(postList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Post in Elasticsearch
-        verify(mockPostSearchRepository, times(0)).save(post);
     }
 
     @Test
@@ -221,7 +204,7 @@ public class PostResourceIT {
     
     @SuppressWarnings({"unchecked"})
     public void getAllPostsWithEagerRelationshipsIsEnabled() throws Exception {
-        PostResource postResource = new PostResource(postRepositoryMock, mockPostSearchRepository);
+        PostResource postResource = new PostResource(postRepositoryMock);
         when(postRepositoryMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
 
         MockMvc restPostMockMvc = MockMvcBuilders.standaloneSetup(postResource)
@@ -238,7 +221,7 @@ public class PostResourceIT {
 
     @SuppressWarnings({"unchecked"})
     public void getAllPostsWithEagerRelationshipsIsNotEnabled() throws Exception {
-        PostResource postResource = new PostResource(postRepositoryMock, mockPostSearchRepository);
+        PostResource postResource = new PostResource(postRepositoryMock);
             when(postRepositoryMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
             MockMvc restPostMockMvc = MockMvcBuilders.standaloneSetup(postResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -305,9 +288,6 @@ public class PostResourceIT {
         assertThat(testPost.getTitle()).isEqualTo(UPDATED_TITLE);
         assertThat(testPost.getContent()).isEqualTo(UPDATED_CONTENT);
         assertThat(testPost.getDate()).isEqualTo(UPDATED_DATE);
-
-        // Validate the Post in Elasticsearch
-        verify(mockPostSearchRepository, times(1)).save(testPost);
     }
 
     @Test
@@ -326,9 +306,6 @@ public class PostResourceIT {
         // Validate the Post in the database
         List<Post> postList = postRepository.findAll();
         assertThat(postList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Post in Elasticsearch
-        verify(mockPostSearchRepository, times(0)).save(post);
     }
 
     @Test
@@ -347,26 +324,6 @@ public class PostResourceIT {
         // Validate the database is empty
         List<Post> postList = postRepository.findAll();
         assertThat(postList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Post in Elasticsearch
-        verify(mockPostSearchRepository, times(1)).deleteById(post.getId());
-    }
-
-    @Test
-    @Transactional
-    public void searchPost() throws Exception {
-        // Initialize the database
-        postRepository.saveAndFlush(post);
-        when(mockPostSearchRepository.search(queryStringQuery("id:" + post.getId()), PageRequest.of(0, 20)))
-            .thenReturn(new PageImpl<>(Collections.singletonList(post), PageRequest.of(0, 1), 1));
-        // Search the post
-        restPostMockMvc.perform(get("/api/_search/posts?query=id:" + post.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(post.getId().intValue())))
-            .andExpect(jsonPath("$.[*].title").value(hasItem(DEFAULT_TITLE)))
-            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT.toString())))
-            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())));
     }
 
     @Test

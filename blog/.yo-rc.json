@@ -15,7 +15,7 @@
     "packageName": "com.okta.developer.blog",
     "packageFolder": "com/okta/developer/blog",
     "prodDatabaseType": "postgresql",
-    "searchEngine": "elasticsearch",
+    "searchEngine": false,
     "serviceDiscoveryType": "eureka",
     "skipClient": true,
     "testFrameworks": [],

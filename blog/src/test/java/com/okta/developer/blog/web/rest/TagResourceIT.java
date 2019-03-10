@@ -4,7 +4,6 @@ import com.okta.developer.blog.BlogApp;
 
 import com.okta.developer.blog.domain.Tag;
 import com.okta.developer.blog.repository.TagRepository;
-import com.okta.developer.blog.repository.search.TagSearchRepository;
 import com.okta.developer.blog.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -13,8 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -25,15 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Validator;
 
 import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
 
 
 import static com.okta.developer.blog.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,14 +43,6 @@ public class TagResourceIT {
 
     @Autowired
     private TagRepository tagRepository;
-
-    /**
-     * This repository is mocked in the com.okta.developer.blog.repository.search test package.
-     *
-     * @see com.okta.developer.blog.repository.search.TagSearchRepositoryMockConfiguration
-     */
-    @Autowired
-    private TagSearchRepository mockTagSearchRepository;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -80,7 +66,7 @@ public class TagResourceIT {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final TagResource tagResource = new TagResource(tagRepository, mockTagSearchRepository);
+        final TagResource tagResource = new TagResource(tagRepository);
         this.restTagMockMvc = MockMvcBuilders.standaloneSetup(tagResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -122,9 +108,6 @@ public class TagResourceIT {
         assertThat(tagList).hasSize(databaseSizeBeforeCreate + 1);
         Tag testTag = tagList.get(tagList.size() - 1);
         assertThat(testTag.getName()).isEqualTo(DEFAULT_NAME);
-
-        // Validate the Tag in Elasticsearch
-        verify(mockTagSearchRepository, times(1)).save(testTag);
     }
 
     @Test
@@ -144,9 +127,6 @@ public class TagResourceIT {
         // Validate the Tag in the database
         List<Tag> tagList = tagRepository.findAll();
         assertThat(tagList).hasSize(databaseSizeBeforeCreate);
-
-        // Validate the Tag in Elasticsearch
-        verify(mockTagSearchRepository, times(0)).save(tag);
     }
 
     @Test
@@ -228,9 +208,6 @@ public class TagResourceIT {
         assertThat(tagList).hasSize(databaseSizeBeforeUpdate);
         Tag testTag = tagList.get(tagList.size() - 1);
         assertThat(testTag.getName()).isEqualTo(UPDATED_NAME);
-
-        // Validate the Tag in Elasticsearch
-        verify(mockTagSearchRepository, times(1)).save(testTag);
     }
 
     @Test
@@ -249,9 +226,6 @@ public class TagResourceIT {
         // Validate the Tag in the database
         List<Tag> tagList = tagRepository.findAll();
         assertThat(tagList).hasSize(databaseSizeBeforeUpdate);
-
-        // Validate the Tag in Elasticsearch
-        verify(mockTagSearchRepository, times(0)).save(tag);
     }
 
     @Test
@@ -270,24 +244,6 @@ public class TagResourceIT {
         // Validate the database is empty
         List<Tag> tagList = tagRepository.findAll();
         assertThat(tagList).hasSize(databaseSizeBeforeDelete - 1);
-
-        // Validate the Tag in Elasticsearch
-        verify(mockTagSearchRepository, times(1)).deleteById(tag.getId());
-    }
-
-    @Test
-    @Transactional
-    public void searchTag() throws Exception {
-        // Initialize the database
-        tagRepository.saveAndFlush(tag);
-        when(mockTagSearchRepository.search(queryStringQuery("id:" + tag.getId()), PageRequest.of(0, 20)))
-            .thenReturn(new PageImpl<>(Collections.singletonList(tag), PageRequest.of(0, 1), 1));
-        // Search the tag
-        restTagMockMvc.perform(get("/api/_search/tags?query=id:" + tag.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(tag.getId().intValue())))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)));
     }
 
     @Test

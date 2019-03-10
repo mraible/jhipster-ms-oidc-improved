@@ -3,7 +3,6 @@ package com.okta.developer.blog.service;
 import com.okta.developer.blog.BlogApp;
 import com.okta.developer.blog.config.Constants;
 import com.okta.developer.blog.domain.User;
-import com.okta.developer.blog.repository.search.UserSearchRepository;
 import com.okta.developer.blog.repository.UserRepository;
 import com.okta.developer.blog.service.dto.UserDTO;
 import com.okta.developer.blog.security.AuthoritiesConstants;
@@ -36,8 +35,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -53,14 +50,6 @@ public class UserServiceIT {
 
     @Autowired
     private UserService userService;
-
-    /**
-     * This repository is mocked in the com.okta.developer.blog.repository.search test package.
-     *
-     * @see com.okta.developer.blog.repository.search.UserSearchRepositoryMockConfiguration
-     */
-    @Autowired
-    private UserSearchRepository mockUserSearchRepository;
 
     @Autowired
     private AuditingHandler auditingHandler;
