@@ -1,7 +1,7 @@
 package com.okta.developer.gateway.config;
 
 import com.okta.developer.gateway.security.AuthoritiesConstants;
-import com.okta.developer.gateway.security.oauth2.AuthHeaderFilter;
+import com.okta.developer.gateway.security.oauth2.AuthorizationHeaderFilter;
 import com.okta.developer.gateway.security.oauth2.AuthorizationHeaderUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -90,7 +91,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthHeaderFilter authHeaderFilter(AuthorizationHeaderUtil headerUtil) {
-        return new AuthHeaderFilter(headerUtil);
+    public AuthorizationHeaderFilter authHeaderFilter(AuthorizationHeaderUtil headerUtil) {
+        return new AuthorizationHeaderFilter(headerUtil);
     }
 }

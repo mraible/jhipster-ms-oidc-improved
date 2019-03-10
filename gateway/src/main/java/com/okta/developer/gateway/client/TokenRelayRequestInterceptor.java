@@ -20,7 +20,7 @@ public class TokenRelayRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        Optional<String> authorizationHeader = authorizationHeaderUtil.getAuthorizationHeaderFromOAuth2Context();
+        Optional<String> authorizationHeader = authorizationHeaderUtil.getAuthorizationHeader();
         authorizationHeader.ifPresent(s -> template.header(AUTHORIZATION, s));
     }
 }

@@ -18,7 +18,7 @@ public class AuthorizationHeaderUtil {
         this.clientService = clientService;
     }
 
-    public Optional<String> getAuthorizationHeaderFromOAuth2Context() {
+    public Optional<String> getAuthorizationHeader() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2AuthorizedClient client = clientService.loadAuthorizedClient(
@@ -30,7 +30,7 @@ public class AuthorizationHeaderUtil {
         if (accessToken == null) {
             return Optional.empty();
         } else {
-            OAuth2AccessToken.TokenType tokenType = accessToken.getTokenType();
+            String tokenType = accessToken.getTokenType().getValue();
             String authorizationHeaderValue = String.format("%s %s", tokenType, accessToken.getTokenValue());
             return Optional.of(authorizationHeaderValue);
         }

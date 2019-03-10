@@ -9,7 +9,8 @@ export class LoginService {
 
   login() {
     const port = location.port ? ':' + location.port : '';
-    location.href = '//' + location.hostname + port + location.pathname + 'authorize';
+    const endpoint = location.pathname.endsWith('/') ? 'authorize' : '/authorize';
+    location.href = '//' + location.hostname + port + endpoint;
   }
 
   logout() {
