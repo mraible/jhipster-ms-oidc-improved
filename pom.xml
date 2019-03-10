@@ -4,7 +4,7 @@
     <groupId>com.okta.developer</groupId>
     <artifactId>jhipster-ms</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Aggregator</name>
+    <name>badass</name>
     <packaging>pom</packaging>
 
     <modules>

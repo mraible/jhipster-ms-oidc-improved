@@ -4,9 +4,8 @@ import com.okta.developer.store.StoreApp;
 import com.okta.developer.store.config.Constants;
 import com.okta.developer.store.domain.User;
 import com.okta.developer.store.repository.UserRepository;
-import com.okta.developer.store.service.dto.UserDTO;
 import com.okta.developer.store.security.AuthoritiesConstants;
-
+import com.okta.developer.store.service.dto.UserDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,16 +16,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,30 +85,27 @@ public class UserServiceIT {
         userDetails.put("picture", user.getImageUrl());
         userDetails.put("locale", "en_US");
 
-        OAuth2Authentication authentication = createMockOAuth2AuthenticationWithDetails(userDetails);
+        OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
 
         UserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLangKey()).isEqualTo("en");
 
         userDetails.put("locale", "it-IT");
-        authentication = createMockOAuth2AuthenticationWithDetails(userDetails);
+        authentication = createMockOAuth2AuthenticationToken(userDetails);
 
         userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLangKey()).isEqualTo("it-it");
     }
 
-    private OAuth2Authentication createMockOAuth2AuthenticationWithDetails(Map<String, Object> userDetails) {
-        Set<String> scopes = new HashSet<String>();
-
+    private OAuth2AuthenticationToken createMockOAuth2AuthenticationToken(Map<String, Object> userDetails) {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.ANONYMOUS));
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(Constants.ANONYMOUS_USER, Constants.ANONYMOUS_USER, authorities);
         usernamePasswordAuthenticationToken.setDetails(userDetails);
+        OAuth2User user = new DefaultOAuth2User(authorities, userDetails, "preferred_username");
 
-        OAuth2Request authRequest = new OAuth2Request(null, "testClient", null, true, scopes, null, null, null, null);
-
-        return new OAuth2Authentication(authRequest, usernamePasswordAuthenticationToken);
+        return new OAuth2AuthenticationToken(user, authorities, "oidc");
     }
 }

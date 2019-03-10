@@ -6,6 +6,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.cloud.netflix.zuul.ZuulFilterInitializer;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Profile(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)
 public class LazyInitBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
-    private Class<?>[] exclusionList;
+    private Class<?>[] exclusionList = {ZuulFilterInitializer.class};
 
     public LazyInitBeanFactoryPostProcessor() {
     }

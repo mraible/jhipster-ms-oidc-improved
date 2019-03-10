@@ -6,10 +6,7 @@
     "enableSwaggerCodegen": false,
     "enableTranslation": true,
     "jhiPrefix": "jhi",
-    "languages": [
-      "en",
-      "fr"
-    ],
+    "languages": ["en", "fr"],
     "messageBroker": false,
     "nativeLanguage": "en",
     "packageName": "com.okta.developer.gateway",
@@ -19,9 +16,7 @@
     "serviceDiscoveryType": "eureka",
     "skipClient": false,
     "skipServer": false,
-    "testFrameworks": [
-      "protractor"
-    ],
+    "testFrameworks": ["protractor"],
     "websocket": false,
     "baseName": "gateway",
     "applicationType": "gateway",
@@ -38,10 +33,5 @@
     "dtoSuffix": "DTO",
     "otherModules": []
   },
-  "entities": [
-    "Blog",
-    "Post",
-    "Tag",
-    "Product"
-  ]
+  "entities": ["Blog", "Post", "Tag", "Product"]
 }
